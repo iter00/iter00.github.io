@@ -298,6 +298,72 @@ var _hmt = _hmt || [];
 
 
   
+    <article id="post-用Python简单封装zabbix的API" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/用Python简单封装zabbix的API/">用Python简单封装zabbix的API</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/16/用Python简单封装zabbix的API/" class="archive-article-date">
+  	<time datetime="2017-11-16T09:12:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>最近在搞zabbix监控，翻出忘记多久前写的zabbix API的简单封装。虽然现在网上有现成的zabbix的模块，但是还是打算把这段代码放在项目里面使用，一是因为足够简单干净，另外当然就是因为你懂得的心理作祟。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> json</div><div class="line">data = &#123;</div><div class="line">    <span class="string">"jsonrpc"</span>: <span class="string">"2.0"</span>,</div><div class="line">    <span class="string">"method"</span>: <span class="string">"user.login"</span>,</div><div class="line">    <span class="string">"params"</span>: &#123;</div><div class="line">        <span class="string">"user"</span>: <span class="string">"Admin"</span>,</div><div class="line">        <span class="string">"password"</span>: <span class="string">""</span>,</div><div class="line">    &#125;,</div><div class="line">    <span class="string">"id"</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">"auth"</span>: <span class="keyword">None</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Error</span><span class="params">(Exception)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,value)</span>:</span></div><div class="line">        self.value = value</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> repr(self.value)</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Zapi</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,auth)</span>:</span></div><div class="line">        self.auth = auth[<span class="number">0</span>]</div><div class="line">        self.zabbixurl = auth[<span class="number">1</span>]</div><div class="line"></div><div class="line"><span class="meta">    @staticmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gettoken</span><span class="params">(username,password,zabbixurl)</span>:</span></div><div class="line">        data.update(params=&#123;<span class="string">"user"</span>:username,<span class="string">"password"</span>:password&#125;)</div><div class="line">        s,r = Zapi.req(zabbixurl,data)</div><div class="line">        <span class="keyword">if</span> s:</div><div class="line">            auth = r[<span class="string">'result'</span>]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">print</span> r</div><div class="line">            <span class="keyword">raise</span> Error(r[<span class="string">'error'</span>])</div><div class="line">        <span class="keyword">return</span> (auth,zabbixurl)</div><div class="line"></div><div class="line"><span class="meta">    @staticmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">req</span><span class="params">(url,data=None,headers=&#123;<span class="string">'content-type'</span>: <span class="string">'application/json'</span>&#125;,method=<span class="string">'POST'</span>)</span>:</span></div><div class="line">        <span class="keyword">if</span> method == <span class="string">'POST'</span>:</div><div class="line">            r = requests.post(url, json.dumps(data),headers=headers)</div><div class="line">        <span class="keyword">elif</span> method == <span class="string">'GET'</span>:</div><div class="line">            r = requests.get(url, json.dumps(data), headers=headers)</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">raise</span> Error(<span class="string">"Unsupported method!"</span>)</div><div class="line">        <span class="keyword">if</span> r.status_code == <span class="number">200</span>:</div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                result = json.loads(r.text)</div><div class="line">            <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</div><div class="line">                <span class="keyword">return</span> <span class="keyword">False</span>, &#123;<span class="string">"error"</span>: e&#125;</div><div class="line">            <span class="keyword">else</span>:</div><div class="line">                <span class="keyword">if</span> <span class="string">"error"</span> <span class="keyword">in</span> result.keys():</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">False</span>,result</div><div class="line">                <span class="keyword">return</span> <span class="keyword">True</span>, result</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">False</span>, &#123;<span class="string">"error"</span>:<span class="string">"HTTP Code:%s"</span> % r.status_code&#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Task</span><span class="params">(self,Method=<span class="string">'host.get'</span>,Output=<span class="string">'extend'</span>,**kwargs)</span>:</span></div><div class="line">        <span class="keyword">if</span> Method.split(<span class="string">"."</span>)[<span class="number">1</span>] == <span class="string">"get"</span>:</div><div class="line">            params = &#123;</div><div class="line">                <span class="string">"output"</span>: Output,</div><div class="line">            &#125;</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            params = &#123;&#125;</div><div class="line">        params.update(kwargs)</div><div class="line">        data.update(auth=self.auth, method=Method, params=params)</div><div class="line">        <span class="keyword">print</span> data</div><div class="line">        status, result = Zapi.req(self.zabbixurl, data)</div><div class="line">        <span class="keyword">return</span> status, result</div></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/16/用Python简单封装zabbix的API/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-HTTPS剥离进行中间人攻击" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -803,98 +869,6 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-用Cython对python的源码进行保护" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/04/22/用Cython对python的源码进行保护/">用Cython对python的源码进行保护</a>
-    </h1>
-  
-
-        
-        <a href="/2017/04/22/用Cython对python的源码进行保护/" class="archive-article-date">
-  	<time datetime="2017-04-22T04:51:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-04-22</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <pre><code>作为解释型语言，Python的有一个痛点是代码保护，像C、golang等开发的产品，天赋里就自带源码保护属性，而python通常都是源码裸奔。虽然可以编译成pyc但是很容易就会被反编译回来。公司的一款重量级产品因为基于swift，所以开发语言自然是Python。那么作为一款商业产品，代码保护当然不能用pyc这种基本么什么卵用的方法，本文介绍一个神器，不仅加密还能加速哦！请出我们的神器：Cython
-</code></pre><h3 id="Cython的安装和使用都很简单："><a href="#Cython的安装和使用都很简单：" class="headerlink" title="Cython的安装和使用都很简单："></a>Cython的安装和使用都很简单：</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip <span class="keyword">install</span> Cython</div></pre></td></tr></table></figure>
-<h3 id="setup-py-示例"><a href="#setup-py-示例" class="headerlink" title="setup.py 示例"></a>setup.py 示例</h3><p>编译test目录下所有的py文件。<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">from <span class="keyword">distutils.core </span>import setup</div><div class="line">from Cython.<span class="keyword">Build </span>import cythonize</div><div class="line">from <span class="keyword">distutils.extension </span>import <span class="keyword">Extension</span></div><div class="line"><span class="keyword"></span></div><div class="line"><span class="keyword">extensions </span>= [  <span class="comment">#这里定义要保护的代码路径</span></div><div class="line">    <span class="keyword">Extension("*", </span>[<span class="string">"test/*.py"</span>]),</div><div class="line"></div><div class="line">]</div><div class="line"></div><div class="line">setup(</div><div class="line">    name = <span class="string">"storUltra console library"</span>,</div><div class="line">    <span class="keyword">ext_modules </span>= cythonize(<span class="keyword">extensions),</span></div><div class="line"><span class="keyword">)</span></div></pre></td></tr></table></figure></p>
-<h3 id="准备示例python代码"><a href="#准备示例python代码" class="headerlink" title="准备示例python代码"></a>准备示例python代码</h3><figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">mkdir</span> test</div><div class="line"><span class="keyword">vim</span> test/<span class="built_in">index</span>.<span class="keyword">py</span></div></pre></td></tr></table></figure>
-<figure class="highlight d"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/usr/bin/python</span></div><div class="line">a = <span class="string">"helloworld"</span></div></pre></td></tr></table></figure>
-<p>注意文件内容只是包含一个变量a，值为hellworld<br>目前目录结构：</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">│   └── demo.py</div><div class="line">└── test.py</div></pre></td></tr></table></figure>
-<h3 id="执行编译"><a href="#执行编译" class="headerlink" title="执行编译"></a>执行编译</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup<span class="selector-class">.py</span> build_ext --inplace</div></pre></td></tr></table></figure>
-<p>编译之后的目录结构：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">├── build</div><div class="line">│   └── temp<span class="selector-class">.macosx-10</span>.<span class="number">12</span>-intel-<span class="number">2.7</span></div><div class="line">│       └── test</div><div class="line">│           └── demo.o</div><div class="line">├── demo.so</div><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">    ├── demo.c</div><div class="line">    └── demo.py</div></pre></td></tr></table></figure></p>
-<p>现在是不是发现demo.so?这个就是编译出来的文件。我们试试来调用它：</p>
-<p>新建一个test.py文件内容如下：</p>
-<figure class="highlight d"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/usr/bin/python</span></div><div class="line"><span class="keyword">import</span> demo</div><div class="line">print demo.a</div></pre></td></tr></table></figure>
-<p>我们已模块的形式import进来，print下a的值，试试执行：</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">wangxundeAir:<span class="keyword">test</span> wangxun$ python <span class="keyword">test</span>.py</div><div class="line">Helloworld</div></pre></td></tr></table></figure>
-<p>输出正常。尝试cat 一下demo.so 会发现是一堆乱码。Cython直接将python源码编译成了C模块。所以我们就有了C编译后的代码保护属性。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Cython</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">python</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/04/22/用Cython对python的源码进行保护/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -992,6 +966,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
               </li>
              
@@ -1005,10 +995,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1032,23 +1018,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">python</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1060,27 +1034,15 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
+                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">VeryCloud</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
+                <a href="javascript:void(0)" class="js-tag color2">python</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1093,6 +1055,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">异常</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">VeryCloud</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
               </li>
             
             <div class="clearfix"></div>

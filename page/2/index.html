@@ -146,6 +146,98 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-用Cython对python的源码进行保护" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/04/22/用Cython对python的源码进行保护/">用Cython对python的源码进行保护</a>
+    </h1>
+  
+
+        
+        <a href="/2017/04/22/用Cython对python的源码进行保护/" class="archive-article-date">
+  	<time datetime="2017-04-22T04:51:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-04-22</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <pre><code>作为解释型语言，Python的有一个痛点是代码保护，像C、golang等开发的产品，天赋里就自带源码保护属性，而python通常都是源码裸奔。虽然可以编译成pyc但是很容易就会被反编译回来。公司的一款重量级产品因为基于swift，所以开发语言自然是Python。那么作为一款商业产品，代码保护当然不能用pyc这种基本么什么卵用的方法，本文介绍一个神器，不仅加密还能加速哦！请出我们的神器：Cython
+</code></pre><h3 id="Cython的安装和使用都很简单："><a href="#Cython的安装和使用都很简单：" class="headerlink" title="Cython的安装和使用都很简单："></a>Cython的安装和使用都很简单：</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip <span class="keyword">install</span> Cython</div></pre></td></tr></table></figure>
+<h3 id="setup-py-示例"><a href="#setup-py-示例" class="headerlink" title="setup.py 示例"></a>setup.py 示例</h3><p>编译test目录下所有的py文件。<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">from <span class="keyword">distutils.core </span>import setup</div><div class="line">from Cython.<span class="keyword">Build </span>import cythonize</div><div class="line">from <span class="keyword">distutils.extension </span>import <span class="keyword">Extension</span></div><div class="line"><span class="keyword"></span></div><div class="line"><span class="keyword">extensions </span>= [  <span class="comment">#这里定义要保护的代码路径</span></div><div class="line">    <span class="keyword">Extension("*", </span>[<span class="string">"test/*.py"</span>]),</div><div class="line"></div><div class="line">]</div><div class="line"></div><div class="line">setup(</div><div class="line">    name = <span class="string">"storUltra console library"</span>,</div><div class="line">    <span class="keyword">ext_modules </span>= cythonize(<span class="keyword">extensions),</span></div><div class="line"><span class="keyword">)</span></div></pre></td></tr></table></figure></p>
+<h3 id="准备示例python代码"><a href="#准备示例python代码" class="headerlink" title="准备示例python代码"></a>准备示例python代码</h3><figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">mkdir</span> test</div><div class="line"><span class="keyword">vim</span> test/<span class="built_in">index</span>.<span class="keyword">py</span></div></pre></td></tr></table></figure>
+<figure class="highlight d"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/usr/bin/python</span></div><div class="line">a = <span class="string">"helloworld"</span></div></pre></td></tr></table></figure>
+<p>注意文件内容只是包含一个变量a，值为hellworld<br>目前目录结构：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">│   └── demo.py</div><div class="line">└── test.py</div></pre></td></tr></table></figure>
+<h3 id="执行编译"><a href="#执行编译" class="headerlink" title="执行编译"></a>执行编译</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup<span class="selector-class">.py</span> build_ext --inplace</div></pre></td></tr></table></figure>
+<p>编译之后的目录结构：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">├── build</div><div class="line">│   └── temp<span class="selector-class">.macosx-10</span>.<span class="number">12</span>-intel-<span class="number">2.7</span></div><div class="line">│       └── test</div><div class="line">│           └── demo.o</div><div class="line">├── demo.so</div><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">    ├── demo.c</div><div class="line">    └── demo.py</div></pre></td></tr></table></figure></p>
+<p>现在是不是发现demo.so?这个就是编译出来的文件。我们试试来调用它：</p>
+<p>新建一个test.py文件内容如下：</p>
+<figure class="highlight d"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/usr/bin/python</span></div><div class="line"><span class="keyword">import</span> demo</div><div class="line">print demo.a</div></pre></td></tr></table></figure>
+<p>我们已模块的形式import进来，print下a的值，试试执行：</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">wangxundeAir:<span class="keyword">test</span> wangxun$ python <span class="keyword">test</span>.py</div><div class="line">Helloworld</div></pre></td></tr></table></figure>
+<p>输出正常。尝试cat 一下demo.so 会发现是一堆乱码。Cython直接将python源码编译成了C模块。所以我们就有了C编译后的代码保护属性。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Cython</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">python</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/04/22/用Cython对python的源码进行保护/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-centos7-自动部署" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -850,6 +942,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
               </li>
              
@@ -863,10 +971,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -890,23 +994,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">python</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -918,27 +1010,15 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
+                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">VeryCloud</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
+                <a href="javascript:void(0)" class="js-tag color2">python</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -951,6 +1031,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">异常</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">VeryCloud</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
               </li>
             
             <div class="clearfix"></div>
