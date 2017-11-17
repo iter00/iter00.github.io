@@ -8,18 +8,18 @@
   <link rel="dns-prefetch" href="https://wangxun.me">
   <title>Zabbix的趋势预测和规律性事件监控 | 踩坑记</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务呢会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通">
+  <meta name="description" content="Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通过">
 <meta name="keywords" content="Zabbix,Zabbix趋势预测,时间偏移,timeleft,forecast">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Zabbix的趋势预测和规律性事件监控">
 <meta property="og:url" content="https://wangxun.me/2017/11/17/Zabbix的趋势预测和规律性事件监控/index.html">
 <meta property="og:site_name" content="踩坑记">
-<meta property="og:description" content="Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务呢会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通">
+<meta property="og:description" content="Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通过">
 <meta property="og:image" content="http://image.wangxun.me/zabbixguilvtuxing.png">
-<meta property="og:updated_time" content="2017-11-17T11:18:46.000Z">
+<meta property="og:updated_time" content="2017-11-17T11:20:47.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Zabbix的趋势预测和规律性事件监控">
-<meta name="twitter:description" content="Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务呢会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通">
+<meta name="twitter:description" content="Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通过">
 <meta name="twitter:image" content="http://image.wangxun.me/zabbixguilvtuxing.png">
   
     <link rel="alternative" href="/atom.xml" title="踩坑记" type="application/atom+xml">
@@ -169,7 +169,7 @@ var _hmt = _hmt || [];
     <div class="article-entry" itemprop="articleBody">
       
         <blockquote>
-<p>Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务呢会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通过这两个函数，其实从1.8.2版本就开始支持的time_shift（时间偏移）也是个非常实用的特性，甚至我觉得要比forecast和timeleft更为实用。</p>
+<p>Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通过这两个函数，其实从1.8.2版本就开始支持的time_shift（时间偏移）也是个非常实用的特性，甚至我觉得要比forecast和timeleft更为实用。</p>
 </blockquote>
 <h3 id="1-forecast-函数"><a href="#1-forecast-函数" class="headerlink" title="1. forecast 函数"></a>1. forecast 函数</h3><ul>
 <li>先来看下官方文档给出的实例：<ul>
@@ -494,15 +494,7 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -515,22 +507,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -554,7 +530,39 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -574,14 +582,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
@@ -594,18 +594,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">VeryCloud</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">timewait</a>
               </li>
              
@@ -615,6 +603,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">异常</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">VeryCloud</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
               </li>
             
             <div class="clearfix"></div>
