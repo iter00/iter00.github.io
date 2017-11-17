@@ -146,6 +146,152 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Zabbix的趋势预测和规律性事件监控" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/17/Zabbix的趋势预测和规律性事件监控/">Zabbix的趋势预测和规律性事件监控</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/17/Zabbix的趋势预测和规律性事件监控/" class="archive-article-date">
+  	<time datetime="2017-11-17T09:41:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>Zabbix3.0 开始引入了两个高大上的触发器函数：forecast和timeleft，Zabbix开始有了神棍模式，掐指一算就知道未来业务呢会不会出问题，是不是很牛叉。其实这两个函数说白了就是根据历史数据来进行预测，类似一个人如果一直做好人好事，那就预测他以后还会做还有如果往水桶里注水，按照之前注入的流量和时间，算出注满水桶还需要多久。是不是又觉得没什么了？其实Zabbix是很强大的，不止通过这两个函数，其实从1.8.2版本就开始支持的time_shift（时间偏移）也是个非常实用的特性，甚至我觉得要比forecast和timeleft更为实用。</p>
+</blockquote>
+<h3 id="1-forecast-函数"><a href="#1-forecast-函数" class="headerlink" title="1. forecast 函数"></a>1. forecast 函数</h3><ul>
+<li>先来看下官方文档给出的实例：<ul>
+<li>⇒ forecast(#10,,1h) → 根据最新的十个值估计一小时后的项目值</li>
+<li>⇒ forecast(1h,,30m) → 根据过去一小时的值估计三十分钟后的项目值</li>
+<li>⇒ forecast(1h,1d,12h) → 根据一天前的一个小时值估计十二个小时后的项目值</li>
+<li>⇒ forecast(1h,,10m,exponential) → 根据过去一小时并按照指数函数方式估计十分钟后的项目值</li>
+<li>⇒ forecast(1h,,2h,polynomial3,max) → 根据过去一小时并按照三次多项式方式估计两小时的最大项目值</li>
+<li>⇒ forecast(#​2,,​-20m) → 根据最新的两个值估计二十分钟前的项目值 （比使用last()或prev()函数更加精确, 特别是项目很少更新的时候, 比如说, 一小时一次）</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>根据实际的监控指标历史数据，预测多久时间后项目的值。预测性质的触发器很有必要结合实际的监控场景，去调试最合适的参考依据。例如如果你以最新的1个值就去推测1小时后的值显然结果很可能是不准确的。这个参考的时间区间，和推测的时间区间，都要结合实际去调出来最合适的。不然很可能适得其反</p>
+</blockquote>
+<h3 id="2-timeleft"><a href="#2-timeleft" class="headerlink" title="2. timeleft"></a>2. timeleft</h3><ul>
+<li>官方实例：<ul>
+<li>⇒ timeleft(#10,,0) → 根据最新的十个值估计项目值达到0需要的时间</li>
+<li>⇒ timeleft(1h,,100) → 根据过去一小时的值估计项目值达到100需要的时间</li>
+<li>⇒ timeleft(1h,1d,0) → 根据一天前的一个小时值估计项目值达到0需要的时间</li>
+<li>⇒ timeleft(1h,,200,polynomial2) → 根据过去一小时并按照二次多项式方式估计项目值达到200需要的时间</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>timeleft不同于forecast的只是forecast是预估项目的值，timeleft则是预测达到指定值需要的时间。例如说预测如果按照最近1小时的磁盘占用率增速，磁盘空间将在1小时后满载，这样告警出来，可以提前去检查清理。</p>
+</blockquote>
+<h3 id="3-time-shift时间偏移的应用"><a href="#3-time-shift时间偏移的应用" class="headerlink" title="3. time_shift时间偏移的应用"></a>3. time_shift时间偏移的应用</h3><blockquote>
+<p>其实很多时候监控数据在一定的时间区间里面会有规律性波动(如图所示，规律以每周为周期)。利用这个规律可以进行很有价值的事件告警，例如用户在线数，如果在上一个规律周期同时刻的在线突降30%那就足以说明这个时刻业务出现了问题。<br><img src="http://image.wangxun.me/zabbixguilvtuxing.png" alt="img"></p>
+</blockquote>
+<ul>
+<li>count时间偏移：<ul>
+<li>count(#10,30,”gt”,7d) 7天前同时刻的前10个值里大于30的个数。</li>
+</ul>
+</li>
+<li>avg的时间偏移：<ul>
+<li>avg(#10,7d) 7天前同时刻的前10个值的平均值</li>
+</ul>
+</li>
+<li>last时间偏移：<ul>
+<li>last(#1, 7d) 7天前同时刻最新的一个值</li>
+</ul>
+</li>
+<li>delta时间偏移：<ul>
+<li>delta(#10,7d)  7天前同时刻最新10个值中最大值减去最小值</li>
+</ul>
+</li>
+<li>max和min时间偏移：<ul>
+<li>max(#10,7d) 7天前同时刻最新10个值中的最大值</li>
+<li>min(#10,7d) 7天前同时刻最新10个值中的最小值</li>
+</ul>
+</li>
+<li>一个触发器表达式实例：</li>
+</ul>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#当前最新<span class="selector-tag">10</span>分钟的<span class="selector-tag">CPU</span>占用率平均值比<span class="selector-tag">7</span>天前上升了<span class="selector-tag">30%</span>而且当前最新<span class="selector-tag">10</span>分钟的<span class="selector-tag">CPU</span>平均占用率超过<span class="selector-tag">30%</span></div><div class="line">&#123;<span class="selector-tag">Template</span> <span class="selector-tag">OS</span> <span class="selector-tag">Linux</span><span class="selector-pseudo">:system.cpu.util</span><span class="selector-attr">[]</span><span class="selector-class">.avg</span>(<span class="number">10</span>m)&#125;/&#123;<span class="selector-tag">Template</span> <span class="selector-tag">OS</span> <span class="selector-tag">Linux</span><span class="selector-pseudo">:system.cpu.util</span><span class="selector-attr">[]</span><span class="selector-class">.avg</span>(<span class="number">10</span>m,<span class="number">7</span>d)&#125; &gt;<span class="selector-tag">1</span><span class="selector-class">.3</span> <span class="selector-tag">and</span> &#123;<span class="selector-tag">Template</span> <span class="selector-tag">OS</span> <span class="selector-tag">Linux</span><span class="selector-pseudo">:system.cpu.util</span><span class="selector-attr">[]</span><span class="selector-class">.avg</span>(<span class="number">10</span>m)&#125; &gt;<span class="selector-tag">30</span></div></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Zabbix</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Zabbix趋势预测</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">时间偏移</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">timeleft</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">forecast</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/17/Zabbix的趋势预测和规律性事件监控/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-N2N组网实践" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -763,115 +909,9 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-Mesos的资源调度和资源约束" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/06/02/Mesos的资源调度和资源约束/">Mesos的资源调度和资源约束</a>
-    </h1>
-  
-
-        
-        <a href="/2017/06/02/Mesos的资源调度和资源约束/" class="archive-article-date">
-  	<time datetime="2017-06-02T06:34:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-06-02</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="一、mesos-资源调度"><a href="#一、mesos-资源调度" class="headerlink" title="一、mesos 资源调度"></a>一、mesos 资源调度</h3><blockquote>
-<p>作为mesos的核心，DRF（Dominant Resource Fairness）算法使mesos有了公平、优秀的资源分配方案。我们先通过下面的图来看一下mesos的资源调度机制（Resource Offer）.盗图一张：</p>
-</blockquote>
-<p><img src="/assets/img/mesos-DRF.jpg" alt=""></p>
-<ol>
-<li>首先mesos slave负责将自身的资源（CPU、内存、磁盘空间、网络端口）汇报给master。</li>
-<li>master收到framework的资源请求，发资源offer给framework。framework决定是接受（有资源需求）还是拒绝（无资源需求）offer。是不是发现跟HR谈薪资有点像 ^-^，不同的是如果framework中的任务一部分执行完，资源空闲了，会再被回收。</li>
-<li>mesos-master跟framework的资源协商过程中会收到framework实际需要执行的任务，最终任务会交给mesos-slave的执行器（Executor）来执行。</li>
-</ol>
-<h3 id="二、mesos资源约束"><a href="#二、mesos资源约束" class="headerlink" title="二、mesos资源约束"></a>二、mesos资源约束</h3><blockquote>
-<p>mesos的资源调度只会保证资源被公平的调度而不会考虑实际业务场景，比如在两个实例的情况下，本来这两个实例有高可用的考虑，但是因为资源调度问题，两个实例被调度到同一个节点上去了。这个时候业务就存在单物理节点故障导致业务不可用的风险。</p>
-</blockquote>
-<ol>
-<li><p>约束固定业务到同一个节点：使用marathon的Constraints参数，实例：</p>
- <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">    "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">    "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">    "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">    "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>CLUSTER<span class="string">", "</span><span class="number">10.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">"]]</span></div><div class="line"><span class="string">  &#125;'</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>约束单个节点上只能有一个实例（当定义一个业务有多个实例的时候，marathon可能会在同一个节点上启动多个实例，此约束可以保障同一个业务在节点上只有一个实力，避免所有实例跑在一个节点上）：</p>
-  <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">   "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">   "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">   "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">   "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>UNIQUE<span class="string">"]]</span></div><div class="line"><span class="string"> &#125;'</span></div></pre></td></tr></table></figure>
-</li>
-</ol>
-<ol>
-<li><p>详细约束,以下实例将不会在hostname为demo-1、demo-2、demo-3上运行。</p>
-  <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">   "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">   "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">   "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">   "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>UNLIKE<span class="string">", "</span>demo-[<span class="number">1</span><span class="number">-3</span>]<span class="string">"]]</span></div><div class="line"><span class="string"> &#125;'</span></div></pre></td></tr></table></figure>
-</li>
-</ol>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">mesos</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">mesos资源调度</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">mesos资源约束</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/06/02/Mesos的资源调度和资源约束/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
     </nav>
   
 
@@ -966,10 +1006,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">docker</a>
               </li>
              
@@ -979,6 +1015,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">mesos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">mesos资源调度</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -998,6 +1046,30 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Zabbix趋势预测</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">时间偏移</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">timeleft</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">N2N</a>
               </li>
              
@@ -1006,15 +1078,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">mesos</a>
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">mesos资源调度</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1023,14 +1091,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1046,18 +1106,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">timewait</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">tw_recycle</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">异常</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
               </li>
              
@@ -1067,6 +1115,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">timewait</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">tw_recycle</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">异常</a>
               </li>
             
             <div class="clearfix"></div>

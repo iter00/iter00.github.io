@@ -146,6 +146,112 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Mesos的资源调度和资源约束" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/06/02/Mesos的资源调度和资源约束/">Mesos的资源调度和资源约束</a>
+    </h1>
+  
+
+        
+        <a href="/2017/06/02/Mesos的资源调度和资源约束/" class="archive-article-date">
+  	<time datetime="2017-06-02T06:34:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-06-02</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一、mesos-资源调度"><a href="#一、mesos-资源调度" class="headerlink" title="一、mesos 资源调度"></a>一、mesos 资源调度</h3><blockquote>
+<p>作为mesos的核心，DRF（Dominant Resource Fairness）算法使mesos有了公平、优秀的资源分配方案。我们先通过下面的图来看一下mesos的资源调度机制（Resource Offer）.盗图一张：</p>
+</blockquote>
+<p><img src="/assets/img/mesos-DRF.jpg" alt=""></p>
+<ol>
+<li>首先mesos slave负责将自身的资源（CPU、内存、磁盘空间、网络端口）汇报给master。</li>
+<li>master收到framework的资源请求，发资源offer给framework。framework决定是接受（有资源需求）还是拒绝（无资源需求）offer。是不是发现跟HR谈薪资有点像 ^-^，不同的是如果framework中的任务一部分执行完，资源空闲了，会再被回收。</li>
+<li>mesos-master跟framework的资源协商过程中会收到framework实际需要执行的任务，最终任务会交给mesos-slave的执行器（Executor）来执行。</li>
+</ol>
+<h3 id="二、mesos资源约束"><a href="#二、mesos资源约束" class="headerlink" title="二、mesos资源约束"></a>二、mesos资源约束</h3><blockquote>
+<p>mesos的资源调度只会保证资源被公平的调度而不会考虑实际业务场景，比如在两个实例的情况下，本来这两个实例有高可用的考虑，但是因为资源调度问题，两个实例被调度到同一个节点上去了。这个时候业务就存在单物理节点故障导致业务不可用的风险。</p>
+</blockquote>
+<ol>
+<li><p>约束固定业务到同一个节点：使用marathon的Constraints参数，实例：</p>
+ <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">    "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">    "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">    "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">    "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>CLUSTER<span class="string">", "</span><span class="number">10.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">"]]</span></div><div class="line"><span class="string">  &#125;'</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>约束单个节点上只能有一个实例（当定义一个业务有多个实例的时候，marathon可能会在同一个节点上启动多个实例，此约束可以保障同一个业务在节点上只有一个实力，避免所有实例跑在一个节点上）：</p>
+  <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">   "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">   "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">   "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">   "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>UNIQUE<span class="string">"]]</span></div><div class="line"><span class="string"> &#125;'</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+<ol>
+<li><p>详细约束,以下实例将不会在hostname为demo-1、demo-2、demo-3上运行。</p>
+  <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">   "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">   "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">   "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">   "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>UNLIKE<span class="string">", "</span>demo-[<span class="number">1</span><span class="number">-3</span>]<span class="string">"]]</span></div><div class="line"><span class="string"> &#125;'</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">mesos</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">mesos资源调度</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">mesos资源约束</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/06/02/Mesos的资源调度和资源约束/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-用Cython对python的源码进行保护" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -684,170 +790,9 @@ append initrd=initrd.img ks=cdrom:/isolinux/anaconda-ks.cfg rd.live.check
 
 
   
-    <article id="post-Dockerfile和docker-swarm初探" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/06/04/Dockerfile和docker-swarm初探/">Dockerfile和docker swarm初探</a>
-    </h1>
-  
-
-        
-        <a href="/2016/06/04/Dockerfile和docker-swarm初探/" class="archive-article-date">
-  	<time datetime="2016-06-04T08:45:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-06-04</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="一、Docker安装"><a href="#一、Docker安装" class="headerlink" title="一、Docker安装"></a>一、Docker安装</h3><p>centos7 Docker 1.12 安装</p>
-<p>Update系统，必须是3.10以上的内核：</p>
-<pre><code>yum update -y
-</code></pre><p>配置Docker官方的yum源</p>
-<pre><code>tee /etc/yum.repos.d/docker.repo &lt;&lt;-&apos;EOF&apos;
-[dockerrepo]
-name=Docker Repository
-baseurl=https://yum.dockerproject.org/repo/main/centos/7/
-enabled=1
-gpgcheck=1
-gpgkey=https://yum.dockerproject.org/gpg
-EOF
-</code></pre><p>安装：</p>
-<pre><code>yum -y install docker-engine
-</code></pre><p>设置并启动系统服务：</p>
-<pre><code>systemctl enable docker
-systemctl start docker
-</code></pre><p>pull镜像：</p>
-<pre><code>docker pull centos:7.2.1511
-</code></pre><h3 id="二、Dockerfile"><a href="#二、Dockerfile" class="headerlink" title="二、Dockerfile"></a>二、Dockerfile</h3><pre><code>FROM    centos:centos7 
-#定义基础镜像（父镜像）
-MAINTAINER  wangxun.me #定义维护者，作者
-ENV NAME WANGXUN    #定义环境变量，可以存在多条
-ADD 123.txt #1.将本地文件拷贝到容器；2.解压压缩包，可以存在多条
-COPY    123.txt /etc/   #复制本地文件到容器
-RUN yum -y install wget     #在容器中执行命令
-RUM pip install supervisor  #安装进程管理工具
-EXPOSE 22   #容器暴露的端口
-ONBUILD ADD
-ONBUILD RUN #
-VOLUME [&quot;/data&quot;]    #映射宿主机的目录到容器。
-ENTRYPOINT [&quot;/usr/bin/supervisord&quot;,&quot;-n&quot;,&quot;-c&quot;,&quot;/etc/supervisord.conf&quot;]  #容器启动时执行的命令，只有最后一条生效。
-</code></pre><h4 id="Dockerfile同目录下的-dockerrignore文本文件内容可以排除，在拷贝文件或目录到容器时排除的文件"><a href="#Dockerfile同目录下的-dockerrignore文本文件内容可以排除，在拷贝文件或目录到容器时排除的文件" class="headerlink" title="Dockerfile同目录下的.dockerrignore文本文件内容可以排除，在拷贝文件或目录到容器时排除的文件"></a>Dockerfile同目录下的.dockerrignore文本文件内容可以排除，在拷贝文件或目录到容器时排除的文件</h4><pre><code>docker build -t victor/centos:7.1 . #编译Docker镜像
-
-docker images   #查看本地的docker镜像
-
-docker run #生成启动容器
-    -it #交互式模式，将容器启动在前台
-    -d  #启动在后端
-    -p  #端口映射
-    -P  #端口映射，但是每次重启容器端口会有变化
-    --name  #Docker名字
-    -v /data:/data  #将宿主机的/data目录挂载到容器的/data
-    -e #给容器添加环境变量
-</code></pre><ul>
-<li>docker ps   #显示启动状态下的容器</li>
-<li>docker ps -a # 显示所有容器</li>
-<li>docker  exec -it dockername /bin/bash #进入交互模式</li>
-</ul>
-<h3 id="三、Docker-swarm"><a href="#三、Docker-swarm" class="headerlink" title="三、Docker swarm"></a>三、Docker swarm</h3><ul>
-<li>试验环境为2台虚拟机：<ul>
-<li>集群的manager：192.168.93.10</li>
-<li>集群node：192.168.93.11</li>
-</ul>
-</li>
-</ul>
-<h4 id="在manager上执行："><a href="#在manager上执行：" class="headerlink" title="在manager上执行："></a>在manager上执行：</h4><pre><code>docker swarm init --advertise-addr 192.168.93.10:2377
-</code></pre><h4 id="输出如下："><a href="#输出如下：" class="headerlink" title="输出如下："></a>输出如下：</h4><pre><code>Swarm initialized: current node (3gq88d9vcsobl1jdb2ht2ytiz) is now a manager.
-
-To add a worker to this swarm, run the following command:
-    docker swarm join \
-    --token SWMTKN-1-1ek06oc1eaisbkfuep4y64oroc54jm2pvqoc55qmnxzgugo1e3-58xahj78yi2fdw6s7umqd7159 \
-    192.168.93.10:2377
-
-To add a manager to this swarm, run the following command:
-    docker swarm join \
-    --token SWMTKN-1-1ek06oc1eaisbkfuep4y64oroc54jm2pvqoc55qmnxzgugo1e3-5wd59watltyue010xg56yak8e \
-    192.168.93.10:2377
-</code></pre><h4 id="依照上面提示在node上执行："><a href="#依照上面提示在node上执行：" class="headerlink" title="依照上面提示在node上执行："></a>依照上面提示在node上执行：</h4><pre><code>docker swarm join \
-    --token SWMTKN-1-1ek06oc1eaisbkfuep4y64oroc54jm2pvqoc55qmnxzgugo1e3-58xahj78yi2fdw6s7umqd7159 \
-    192.168.93.10:2377
-</code></pre><h4 id="到此集群已经创建完毕"><a href="#到此集群已经创建完毕" class="headerlink" title="到此集群已经创建完毕"></a>到此集群已经创建完毕</h4><h4 id="查看集群节点："><a href="#查看集群节点：" class="headerlink" title="查看集群节点："></a>查看集群节点：</h4><pre><code>#docker node ls
-ID                           HOSTNAME               STATUS  AVAILABILITY  MANAGER STATUS
-3gq88d9vcsobl1jdb2ht2ytiz *  docker.wangxun.me   Ready   Active        Leader
-959reaczvrnny9q3cbrgvpiqg    docker2.wangxun.me  Ready   Active
-</code></pre><h4 id="创建服务："><a href="#创建服务：" class="headerlink" title="创建服务："></a>创建服务：</h4><pre><code>docker service create --name victor --replicas=2
-
-docker service create命令创建一个 service.
---name标签指定service的名字.
---replicas标签来详细声明运行实体数量.
-</code></pre>
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">docker</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">dockerfile</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">swarm</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/06/04/Dockerfile和docker-swarm初探/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
     </nav>
   
 
@@ -942,10 +887,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">docker</a>
               </li>
              
@@ -955,6 +896,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">mesos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">mesos资源调度</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -974,6 +927,30 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Zabbix趋势预测</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">时间偏移</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">timeleft</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">N2N</a>
               </li>
              
@@ -982,15 +959,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">mesos</a>
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">mesos资源调度</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -999,14 +972,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1022,18 +987,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">timewait</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">tw_recycle</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">异常</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
               </li>
              
@@ -1043,6 +996,18 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">timewait</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">tw_recycle</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">异常</a>
               </li>
             
             <div class="clearfix"></div>
