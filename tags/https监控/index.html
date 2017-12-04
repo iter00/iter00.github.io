@@ -6,19 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://wangxun.me">
-  <title>HTTPS剥离进行中间人攻击 | 踩坑记</title>
+  <title>Tag: https监控 | 踩坑记</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="一、启用HTTPS就不怕被嗅探了吗？ 我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。   通常我们在访问一个https的站点的时候不会直接输入全路径，例如：https://wangxun.me 多数只会输入：wangxun.me">
-<meta name="keywords" content="ARP欺骗,中间人攻击,HTTPS,sslstrip">
-<meta property="og:type" content="article">
-<meta property="og:title" content="HTTPS剥离进行中间人攻击">
-<meta property="og:url" content="https://wangxun.me/2017/09/05/HTTPS剥离进行中间人攻击/index.html">
+  <meta name="description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
+<meta property="og:type" content="website">
+<meta property="og:title" content="踩坑记">
+<meta property="og:url" content="https://wangxun.me/tags/https监控/index.html">
 <meta property="og:site_name" content="踩坑记">
-<meta property="og:description" content="一、启用HTTPS就不怕被嗅探了吗？ 我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。   通常我们在访问一个https的站点的时候不会直接输入全路径，例如：https://wangxun.me 多数只会输入：wangxun.me">
-<meta property="og:updated_time" content="2017-11-17T04:08:32.000Z">
+<meta property="og:description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="HTTPS剥离进行中间人攻击">
-<meta name="twitter:description" content="一、启用HTTPS就不怕被嗅探了吗？ 我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。   通常我们在访问一个https的站点的时候不会直接输入全路径，例如：https://wangxun.me 多数只会输入：wangxun.me">
+<meta name="twitter:title" content="踩坑记">
+<meta name="twitter:description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
   
     <link rel="alternative" href="/atom.xml" title="踩坑记" type="application/atom+xml">
   
@@ -146,256 +144,76 @@ var _hmt = _hmt || [];
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-HTTPS剥离进行中间人攻击" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      HTTPS剥离进行中间人攻击
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2017" class="archive-year">2017</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2017/12/01/HTTPS证书监控/" class="archive-article-date">
+  	<time datetime="2017-12-01T14:41:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-12-01</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2017/12/01/HTTPS证书监控/">HTTPS SSL证书状态监控</a>
     </h1>
   
 
-        
-        <a href="/2017/09/05/HTTPS剥离进行中间人攻击/" class="archive-article-date">
-  	<time datetime="2017-09-05T02:25:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-05</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="一、启用HTTPS就不怕被嗅探了吗？"><a href="#一、启用HTTPS就不怕被嗅探了吗？" class="headerlink" title="一、启用HTTPS就不怕被嗅探了吗？"></a>一、启用HTTPS就不怕被嗅探了吗？</h2><blockquote>
-<p>我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。</p>
-</blockquote>
-<ul>
-<li><p>通常我们在访问一个https的站点的时候不会直接输入全路径，例如：<a href="https://wangxun.me">https://wangxun.me</a> 多数只会输入：wangxun.me.这样其实首先是会去请求HTTP而不是请求HTTPS，只是HTTP通过跳转、连接、重定向的方法进行了页面跳转。试试访问：<a href="http://wangxun.me">http://wangxun.me</a></p>
-</li>
-<li><p>设想一下，如果我们可以强制到让客户端访问HTTP，那么用户交互是不是就可以被获取到了？没错。HTTPS很安全，但是如果把HTTPS强制性的剥离，让用户通过HTTP协议传输数据就可以直接劫持到用户的信息。</p>
-</li>
-</ul>
-<h2 id="二、中间人攻击、HTTPS剥离"><a href="#二、中间人攻击、HTTPS剥离" class="headerlink" title="二、中间人攻击、HTTPS剥离"></a>二、中间人攻击、HTTPS剥离</h2><ul>
-<li>中间人攻击的前提是流量劫持，无论通过arp欺骗、伪装DHCP都可以达到目的，本文以arp欺骗来做演示。</li>
-<li><p>使用工具:</p>
-<ul>
-<li><a href="https://ettercap.github.io/ettercap/" target="_blank" rel="external">ettercap</a></li>
-<li><a href="http://www.thoughtcrime.org/software/sslstrip/" target="_blank" rel="external">sslstrip</a></li>
-</ul>
-</li>
-<li><p>开启路由转发：echo “1”&gt;/proc/sys/net/ipv4/ip_forward</p>
-</li>
-<li><p>iptables：iptables -t nat -A PREROUTING -p tcp –dport 80 -j REDIRECT -to-port 10000</p>
-</li>
-</ul>
-<blockquote>
-<p>sslstrip的原理：通常访问网址的时候我们大多不会刻意的在前面写上https，也很少会关注我们是通过HTTP协议还是HTTPS协议在浏览。通常要求https访问的站点，在用户通过http访问的时候会以重定向的方式重定向到HTTPS地址，而sslstrip的原理解释拦截向https的重定向请求，担当一个代理的角色，如实转发客户端请求并返回，但是客户端跟中间人的交互采用的是HTTP协议，由于没有建立SSL连接，所以客户端提交的信息都会暴露。</p>
-</blockquote>
-<ul>
-<li>sslstrip监听：</li>
-</ul>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sslstrip -l <span class="number">10000</span></div></pre></td></tr></table></figure>
-<ul>
-<li>开始arp欺骗并嗅探密码：</li>
-</ul>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">这里如果真实的网关地址是：<span class="number">192.168</span>.<span class="number">1.1</span></div><div class="line">ettercap -Tq -M arp:remote <span class="regexp">//</span><span class="regexp">//</span></div></pre></td></tr></table></figure>
-<ul>
-<li>结果就是各种密码就出现了,SNMP/HTTP/IAMP等等，还会有ssh、ftp等的密码。</li>
-</ul>
-<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">SNMP </span>: <span class="number">192.168</span>.<span class="number">1.42</span>:<span class="number">161</span> -&gt; <span class="attribute">COMMUNITY</span>: public  <span class="attribute">INFO</span>: SNMP v1</div><div class="line"><span class="attribute">IMAP </span>: <span class="number">103.231</span>.<span class="number">69.253</span>:<span class="number">143</span> -&gt; <span class="attribute">USER</span>: xxxx<span class="variable">@xxx</span>.com  <span class="attribute">PASS</span>: <span class="string">"*******"</span></div><div class="line"><span class="attribute">HTTP </span>: <span class="number">117.122</span>.<span class="number">217.6</span>:<span class="number">80</span> -&gt; <span class="attribute">USER</span>:xxxxx -  <span class="attribute">PASS</span>:xxxxx   <span class="attribute">INFO</span>: <span class="attribute">http</span>:<span class="comment">//xxxx/xxxx/article/details/31375935</span></div></pre></td></tr></table></figure>
-<h2 id="三、如何防范"><a href="#三、如何防范" class="headerlink" title="三、如何防范"></a>三、如何防范</h2><ul>
-<li>从源头：绑定网关，这样会使arp欺骗失去作用。</li>
-<li>从业务：启用HSTS，启用后只要和服务器建立过一次成功的链接，后续就会强制使用https，sslstrip就没用了。<a href="https://www.linpx.com/p/hsts-and-hsts-preload-list-enabled-applications.html" target="_blank" rel="external">详情点这里</a></li>
-<li>从习惯：<ul>
-<li>不要蹭网，很多免费的wifi就是专门用来干这个的。。。</li>
-<li>防止被蹭，家庭wifi密码注意保密，被蹭网的危害不止损失一些带宽，被有心人利用会很危险。</li>
-<li>尽量避免用公共wifi。</li>
-<li>有安全意识，在使用共享网络时最好只浏览，不做登入操作。</li>
-</ul>
-</li>
-</ul>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我喝咖啡！<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/assets/img/zhifubao.png">
-                      <span class="reward-type">支付宝</span>
-                    </div>
-                    
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/assets/img/weixin.jpg">
-                      <span class="reward-type">微信</span>
-                    </div>
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">ARP欺骗</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Zabbix</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">中间人攻击</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">https监控</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">HTTPS</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">ssl监控</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">sslstrip</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ssl监控命令</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ssl证书监控</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=https://wangxun.me/2017/09/05/HTTPS剥离进行中间人攻击/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2017/11/16/用Python简单封装zabbix的API/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          用Python简单封装zabbix的API
-        
-      </div>
-    </a>
   
   
-    <a href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">组合使用免费的VeryCloud&amp;腾讯云CDN加速github静态博客</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-  <div id="SOHUCS" sid="HTTPS剥离进行中间人攻击" ></div> 
-<script type="text/javascript"> 
-window.YiliaChangyanWrap = function() {
-    var appid = "cyrPrHatm"; 
-    var conf = "1c08167df28cbb3eea7ffca06fd08bbb"; 
-    var width = window.innerWidth || document.documentElement.clientWidth; 
-    if (width < 960) { 
-    window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="//changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("//changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
-}
-</script>
-  
-
-  
-
-  
+    
 
 
           </div>
@@ -418,9 +236,9 @@ window.YiliaChangyanWrap = function() {
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
+		isPost: false,
 		isArchive: false,
-		isTag: false,
+		isTag: true,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,

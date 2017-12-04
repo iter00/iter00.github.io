@@ -146,6 +146,111 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-记一次tcp-tw-recycle引发的事故" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/25/记一次tcp-tw-recycle引发的事故/">记一次tcp_tw_recycle引发的事故</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/25/记一次tcp-tw-recycle引发的事故/" class="archive-article-date">
+  	<time datetime="2017-08-25T04:08:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="事故现象"><a href="#事故现象" class="headerlink" title="事故现象"></a>事故现象</h3><ul>
+<li>大量用户反馈线上业务无法访问。但是同时仍有很多用户访问是正常的。且异常没有区域性特征。</li>
+<li>日志告警没反应、系统负载、业务状态的监控均没有任何反馈。实际检查测试看看起来也正常。</li>
+</ul>
+<h3 id="定位处理"><a href="#定位处理" class="headerlink" title="定位处理"></a>定位处理</h3><ol>
+<li>从办公室访问测试，一切正常。使用多节点ping服务器，排除国内骨干网络异常。</li>
+<li>联系用户测试，mtr数据显示用户到服务端网络正常。同时检查业务状态，业务运行正常。且未发现错误日志。</li>
+<li>在服务器上抓包分析，发现反馈异常的客户端发来的包直接被无视了服务端没有回ACK。确定是服务端问题。</li>
+<li>此处有点懵逼，进行系统检查，业务配置、防火墙都没有发现问题，直到查到最近操作记录发现有/etc/sysctl.conf被编辑的记录。于是查看sysctl.conf发现了一条记录：net.ipv4.tcp_tw_recycle = 1，恍然大悟，因为之前被这个坑坑过。。。说多了都是泪，拿掉这条记录，做了下测试,恢复正常</li>
+</ol>
+<h3 id="问题解释"><a href="#问题解释" class="headerlink" title="问题解释"></a>问题解释</h3><ul>
+<li>科普1: TCP协议每发送一个包都会启动一个定时器。切每个包都要求有ACK回复。当定时器超时还没有收到ack就说明这个包丢掉了。就会触发重传。这个定时器保障了TCP数据传输的完整性。</li>
+<li>科普2: 内核参数：net.ipv4.tcp_tw_recycle的解释：打开快速 TIME-WAIT sockets 回收，怎么个快速法那？是这样的一种行为:缓存每个主机最新的时间戳，后续请求中如果时间戳小于缓存的时间戳，即视为无效，相应的数据包会被丢弃。当net.ipv4.tcp_tw_recycle = 1的时候，这种行为会被激活。当然这种行为依赖于net.ipv4.tcp_timestamps的开启。如果net.ipv4.tcp_timestamps是关闭状态，net.ipv4.tcp_tw_recycle是不生效的。</li>
+<li>科普3: 家庭路由也好，公司的路由也好基本都是采用NAT技术。路由一般都会接入很多个client，但是对于服务器来说，很多个client会被视为是一个，因为出口的ip只有一个。这样就会有一个情况：数据包的时间戳会乱序因为不同的客户端的时间戳会存在差异。而在启用net.ipv4.tcp_tw_recycle的情况下这种乱序会导致判断失误被丢包，现象就是，服务端能收到客户端的包但是不会ACK。</li>
+</ul>
+<h3 id="为什么会有TIME-WAIT状态"><a href="#为什么会有TIME-WAIT状态" class="headerlink" title="为什么会有TIME_WAIT状态"></a>为什么会有TIME_WAIT状态</h3><ul>
+<li>主动关闭的Socket端会进入TIME_WAIT状态，并且持续2MSL时间长度，这也是一个IP数据包能在网络上生存的最长时间，超过这个时间包将在网络中消失。目前Linux上MSL的时间普遍是60s，也就是说一个包的最长生存周期是2分钟。而windows的MSL默认是2分钟，包的最长生存周期是4分钟。</li>
+<li>TIME_WAIT存在的理由：可以假设一下TCP连接如果不等待直接就回收变成可用的状态，那么如果接收到因为网络质量或者其他因素延迟的包，这个包其实是已经失效了的，但是因为之前的连接已经回收被利用，这就会导致已经失效的包被处理。而等待2MLS的时间后，可以确定包已经从网络上消失了再回收资源重用这样才能确保安全。简单来说：TIME_WAIT状态的存在是为了保证TCP连接能够可靠关闭。还有保证这次连接的重复数据段从网络中消失。</li>
+</ul>
+<h3 id="TIME-WAIT相关的内核参数"><a href="#TIME-WAIT相关的内核参数" class="headerlink" title="TIME_WAIT相关的内核参数"></a>TIME_WAIT相关的内核参数</h3><ul>
+<li>粗暴式：net.ipv4.tcp_max_tw_buckets:系统在同时所处理的最大timewait sockets 数目。如果超过此数的话，time-wait socket 会被立即删除并且显示警告信息（慎用）。</li>
+<li>可能没卵用式：net.ipv4.tcp_tw_reuse:只在作为客户端的时候有用。对服务端不起作用。</li>
+<li>迂回式: 增加系统可用资源，当然，是有上限的： ipv4.ip_conntrack_max  ipv4.ip_local_port_range</li>
+</ul>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">timewait</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">tw_recycle</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">异常</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/08/25/记一次tcp-tw-recycle引发的事故/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Mesos的资源调度和资源约束" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -664,132 +769,6 @@ append initrd=initrd.img ks=cdrom:/isolinux/anaconda-ks.cfg rd.live.check
 
 
   
-    <article id="post-利用Shadowsocks实现多地内网互连" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/10/15/利用Shadowsocks实现多地内网互连/">利用Shadowsocks实现多地内网互连</a>
-    </h1>
-  
-
-        
-        <a href="/2016/10/15/利用Shadowsocks实现多地内网互连/" class="archive-article-date">
-  	<time datetime="2016-10-15T09:36:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2016-10-15</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="场景："><a href="#场景：" class="headerlink" title="场景："></a>场景：</h3><p>公司业务分布在三个地方的机房里。分别是杭州、苏州、无锡，每个机房都有都只有个别有公网IP的服务器对外。剩下的全部是只有内网网络。想要访问机房的内网服务器，就必须要跳来跳去，或者就是更坑爹的连上VPN。更不爽的是，想要统一化管理比如说用ansible同步规则的时候就蛋疼了。作为一个有理想的懒人，咱不能被这点问题给拦住，，想想不能偷懒只能一个机房一个机房的去同步的日子吧。。。</p>
-<h3 id="使用技术"><a href="#使用技术" class="headerlink" title="使用技术"></a>使用技术</h3><ul>
-<li>shadowsocks 不要误会这里不是用来翻Q。本文场景中是用来将各个地区的网络连接起来的主要法宝。</li>
-<li>redsocks sock重定向工具，用来将tcp连接重定向到代理服务器（例如shadowsocks）</li>
-<li>iptables 这个不用介绍，在本文中用来做连接转发。</li>
-</ul>
-<h3 id="拓扑："><a href="#拓扑：" class="headerlink" title="拓扑："></a>拓扑：</h3><p><img src="/assets/img/hangzhoujiagou.png" alt="image"></p>
-<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><ul>
-<li>使跳板机可以访问到三地机房的任意一台机器。</li>
-<li>杭州作为跳板机所在机房</li>
-</ul>
-<h3 id="方案："><a href="#方案：" class="headerlink" title="方案："></a>方案：</h3><h4 id="在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。"><a href="#在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。" class="headerlink" title="在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。"></a>在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。</h4><ul>
-<li>shadowsocks安装</li>
-</ul>
-<figure class="highlight cmake"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip <span class="keyword">install</span> shadowsocks</div></pre></td></tr></table></figure>
-<ul>
-<li>Shadowsocks Server 端配置：/etc/shadowsocks.json</li>
-</ul>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  <span class="attr">"server"</span>: <span class="string">"0.0.0.0"</span>,</div><div class="line">  <span class="attr">"server_port"</span>: <span class="number">10080</span>,</div><div class="line">  <span class="attr">"password"</span>: <span class="string">"密码"</span>,</div><div class="line">  <span class="attr">"method"</span>: <span class="string">"aes-256-cfb"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl <span class="builtin-name">enable</span> shadowsocks &amp;&amp; systemctl start shadowsocks</div></pre></td></tr></table></figure>
-<h4 id="部署shadowsocks客户端"><a href="#部署shadowsocks客户端" class="headerlink" title="部署shadowsocks客户端"></a>部署shadowsocks客户端</h4><ul>
-<li><p>在杭州机器上安装shadowsocks客户端，分别连线至苏州和无锡并启用本地socks5代理。监听端口：苏州：10.2.1.7:1080    无锡内网:10.2.1.7:1081</p>
-</li>
-<li><p>连接苏州的配置：</p>
-</li>
-</ul>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    <span class="attr">"server"</span>:<span class="string">"苏州server IP"</span>,</div><div class="line">    <span class="attr">"server_port"</span>:<span class="number">10080</span>,</div><div class="line">    <span class="attr">"local"</span>:<span class="string">"127.0.0.1"</span>,</div><div class="line">    <span class="attr">"local_port"</span>:<span class="number">1080</span>,</div><div class="line">    <span class="attr">"password"</span>:<span class="string">"密码"</span>,</div><div class="line">    <span class="attr">"timeout"</span>:<span class="number">600</span>,</div><div class="line">    <span class="attr">"method"</span>:<span class="string">"aes-256-cfb"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<ul>
-<li>连接无锡的配置：</li>
-</ul>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    <span class="attr">"server"</span>:<span class="string">"无锡server IP"</span>,</div><div class="line">    <span class="attr">"server_port"</span>:<span class="number">10080</span>,</div><div class="line">    <span class="attr">"local"</span>:<span class="string">"127.0.0.1"</span>,</div><div class="line">    <span class="attr">"local_port"</span>:<span class="number">1081</span>,</div><div class="line">    <span class="attr">"password"</span>:<span class="string">"密码"</span>,</div><div class="line">    <span class="attr">"timeout"</span>:<span class="number">600</span>,</div><div class="line">    <span class="attr">"method"</span>:<span class="string">"aes-256-cfb"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="杭州服务器上部署redsocks"><a href="#杭州服务器上部署redsocks" class="headerlink" title="杭州服务器上部署redsocks"></a>杭州服务器上部署redsocks</h4><ul>
-<li>编译redsocks：</li>
-</ul>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">yum -<span class="keyword">y</span> install gcc libevent livevent-devel</div><div class="line">git clone http<span class="variable">s:</span>//github.<span class="keyword">com</span>/darkk/redsocks</div><div class="line"><span class="keyword">cd</span> redsocks</div><div class="line"><span class="keyword">make</span></div></pre></td></tr></table></figure>
-<ul>
-<li>安装：<br>redsocks安装很简单，只需要把编译出来的单文件redsocks复制到系统的任意path中然后把配置文件模板复制到/etc下并重命名成redsocks.conf。或者绝对路径执行也OK。</li>
-</ul>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo <span class="keyword">cp</span> redsocks /usr/bin/</div><div class="line"><span class="keyword">cp</span> redsocks.<span class="keyword">conf</span>.example /etc/redsocks.<span class="keyword">conf</span></div></pre></td></tr></table></figure>
-<ul>
-<li>redsocks：配置连接到苏州的本地监听端口1080，redsocks对应端口：12345，连接无锡的本地监听端口：1081，redsocks对应端口：12346；</li>
-</ul>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">vim</span> /etc/redsocks.<span class="keyword">conf</span></div></pre></td></tr></table></figure>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">redsocks &#123;                  </div><div class="line">  local_ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;     </div><div class="line">  local_port = <span class="number">12345</span>;</div><div class="line">  ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;</div><div class="line">  port = <span class="number">1080</span>;          <span class="comment">//连接苏州</span></div><div class="line">  type = socks5;  <span class="comment">// or socks4, http-connect</span></div><div class="line">&#125;</div><div class="line">redsocks &#123;</div><div class="line">  local_ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;</div><div class="line">  local_port = <span class="number">12346</span>;   </div><div class="line">  ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;</div><div class="line">  port = <span class="number">1081</span>;          <span class="comment">//连接无锡</span></div><div class="line">  type = socks5;  <span class="comment">// or socks4, http-connect</span></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="定义iptables规则"><a href="#定义iptables规则" class="headerlink" title="定义iptables规则"></a>定义iptables规则</h4><ul>
-<li>杭州服务器定义iptables nat表中的OUTPUT链，新增规则，分别将出去的流量目标是苏州机房的流量REDIRECT转到12345端口，目标是无锡内网的流量REDIRECT到12346端口。</li>
-</ul>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#将去苏州内网的TCP流量转发到12345端口</span></div><div class="line">iptables -t<span class="built_in"> nat </span>-A OUTPUT -d 10.2.1.0/24 -p tcp -j REDIRECT --to-port 12345</div><div class="line"></div><div class="line"><span class="comment">#将去无锡内网的TCP流量转发到12346端口</span></div><div class="line">iptables -t<span class="built_in"> nat </span>-A OUTPUT -d 172.16.9.0/24 -p tcp -j REDIRECT --to-port 12346</div></pre></td></tr></table></figure>
-<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>到此我们就完成了配置，可以尝试下，配置没有问题的话，跳板机上连接所有机器的内网IP都是可以联通的了。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">shadowsocks</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">redsocks</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2016/10/15/利用Shadowsocks实现多地内网互连/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
@@ -887,6 +866,38 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">https监控</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ssl监控</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ssl监控命令</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ssl证书监控</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
               </li>
              
@@ -900,38 +911,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Zabbix趋势预测</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">时间偏移</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">timeleft</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">forecast</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -951,14 +930,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">N2N</a>
               </li>
              
@@ -975,7 +946,27 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Zabbix趋势预测</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">时间偏移</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">timeleft</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">forecast</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -984,18 +975,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">python</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">timewait</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">tw_recycle</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">异常</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1008,6 +987,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">timewait</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">tw_recycle</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">异常</a>
               </li>
             
             <div class="clearfix"></div>

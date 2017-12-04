@@ -6,19 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://wangxun.me">
-  <title>HTTPS剥离进行中间人攻击 | 踩坑记</title>
+  <title>HTTPS SSL证书状态监控 | 踩坑记</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="一、启用HTTPS就不怕被嗅探了吗？ 我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。   通常我们在访问一个https的站点的时候不会直接输入全路径，例如：https://wangxun.me 多数只会输入：wangxun.me">
-<meta name="keywords" content="ARP欺骗,中间人攻击,HTTPS,sslstrip">
+  <meta name="description" content="遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提">
+<meta name="keywords" content="Zabbix,https监控,ssl监控,ssl监控命令,ssl证书监控">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HTTPS剥离进行中间人攻击">
-<meta property="og:url" content="https://wangxun.me/2017/09/05/HTTPS剥离进行中间人攻击/index.html">
+<meta property="og:title" content="HTTPS SSL证书状态监控">
+<meta property="og:url" content="https://wangxun.me/2017/12/01/HTTPS证书监控/index.html">
 <meta property="og:site_name" content="踩坑记">
-<meta property="og:description" content="一、启用HTTPS就不怕被嗅探了吗？ 我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。   通常我们在访问一个https的站点的时候不会直接输入全路径，例如：https://wangxun.me 多数只会输入：wangxun.me">
-<meta property="og:updated_time" content="2017-11-17T04:08:32.000Z">
+<meta property="og:description" content="遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提">
+<meta property="og:updated_time" content="2017-12-04T09:38:25.091Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="HTTPS剥离进行中间人攻击">
-<meta name="twitter:description" content="一、启用HTTPS就不怕被嗅探了吗？ 我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。   通常我们在访问一个https的站点的时候不会直接输入全路径，例如：https://wangxun.me 多数只会输入：wangxun.me">
+<meta name="twitter:title" content="HTTPS SSL证书状态监控">
+<meta name="twitter:description" content="遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提">
   
     <link rel="alternative" href="/atom.xml" title="踩坑记" type="application/atom+xml">
   
@@ -146,71 +146,49 @@ var _hmt = _hmt || [];
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-HTTPS剥离进行中间人攻击" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-HTTPS证书监控" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      HTTPS剥离进行中间人攻击
+      HTTPS SSL证书状态监控
     </h1>
   
 
         
-        <a href="/2017/09/05/HTTPS剥离进行中间人攻击/" class="archive-article-date">
-  	<time datetime="2017-09-05T02:25:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-05</time>
+        <a href="/2017/12/01/HTTPS证书监控/" class="archive-article-date">
+  	<time datetime="2017-12-01T14:41:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-12-01</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="一、启用HTTPS就不怕被嗅探了吗？"><a href="#一、启用HTTPS就不怕被嗅探了吗？" class="headerlink" title="一、启用HTTPS就不怕被嗅探了吗？"></a>一、启用HTTPS就不怕被嗅探了吗？</h2><blockquote>
-<p>我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。</p>
+        <blockquote>
+<p>遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提前通知运维，证书即将过期，然后对证书状态异常也能监控起来。</p>
 </blockquote>
+<p>去查阅了一些资料，最终用golang完成了一个小工具，很简单，不足40行代码。自行编译代码或者直接<a href="http://image.wangxun.me/chkcert" target="_blank" rel="external">下载</a>编译好的命令行(只编译了Linux x64)，其他操作系统请自行编译。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"crypto/tls"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"net"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">	<span class="string">"flag"</span></div><div class="line">)</div><div class="line"><span class="keyword">var</span>	dialer = &amp;net.Dialer&#123;Timeout: <span class="number">5</span> * time.Second&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">checkCert</span><span class="params">(server <span class="keyword">string</span>,T <span class="keyword">float64</span> )</span></span> &#123;</div><div class="line">	conn, err := tls.DialWithDialer(dialer, <span class="string">"tcp"</span>, server+<span class="string">":443"</span>, <span class="literal">nil</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		fmt.Println(server, err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Close()</div><div class="line">	valid := conn.VerifyHostname(server)</div><div class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> conn.ConnectionState().PeerCertificates &#123;</div><div class="line">		<span class="keyword">if</span> valid == <span class="literal">nil</span> &#123;</div><div class="line">			now := time.Now()</div><div class="line">			sumDay := c.NotAfter.Local().Sub(now).Hours()/<span class="number">24</span></div><div class="line">			<span class="keyword">if</span> sumDay &lt; T&#123;</div><div class="line">				fmt.Println(server,<span class="string">"证书还有"</span>,sumDay,<span class="string">"天过期!"</span>)</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				fmt.Println(<span class="string">"OK"</span>)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">	host := flag.String(<span class="string">"h"</span>, <span class="string">""</span>, <span class="string">"HTTPS站点域名或IP,例：wangxun.me(不能带协议头)"</span>)</div><div class="line">	T := flag.Float64(<span class="string">"d"</span>,<span class="number">30</span>,<span class="string">"距离过期还有多少天时提醒。单位为天，默认为30天。"</span>)</div><div class="line">	flag.Parse()</div><div class="line">	checkCert(*host,*T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <ul>
-<li><p>通常我们在访问一个https的站点的时候不会直接输入全路径，例如：<a href="https://wangxun.me">https://wangxun.me</a> 多数只会输入：wangxun.me.这样其实首先是会去请求HTTP而不是请求HTTPS，只是HTTP通过跳转、连接、重定向的方法进行了页面跳转。试试访问：<a href="http://wangxun.me">http://wangxun.me</a></p>
-</li>
-<li><p>设想一下，如果我们可以强制到让客户端访问HTTP，那么用户交互是不是就可以被获取到了？没错。HTTPS很安全，但是如果把HTTPS强制性的剥离，让用户通过HTTP协议传输数据就可以直接劫持到用户的信息。</p>
-</li>
+<li>命令行用法：</li>
 </ul>
-<h2 id="二、中间人攻击、HTTPS剥离"><a href="#二、中间人攻击、HTTPS剥离" class="headerlink" title="二、中间人攻击、HTTPS剥离"></a>二、中间人攻击、HTTPS剥离</h2><ul>
-<li>中间人攻击的前提是流量劫持，无论通过arp欺骗、伪装DHCP都可以达到目的，本文以arp欺骗来做演示。</li>
-<li><p>使用工具:</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">Usage</span> <span class="selector-tag">of</span> <span class="selector-tag">chkcert</span>:</div><div class="line">  <span class="selector-tag">-d</span> <span class="selector-tag">float</span></div><div class="line">    	距离过期还有多少天时提醒。单位为天，默认为30天。 (<span class="selector-tag">default</span> 30)</div><div class="line">  <span class="selector-tag">-h</span> <span class="selector-tag">string</span></div><div class="line">    	<span class="selector-tag">HTTPS</span>站点域名或<span class="selector-tag">IP</span>,例：<span class="selector-tag">wangxun</span><span class="selector-class">.me</span>(不能带协议头)</div><div class="line"></div><div class="line"><span class="selector-tag">Example1</span>:</div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span># <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">wangxun</span><span class="selector-class">.me</span> <span class="selector-tag">-d</span> 300</div><div class="line"><span class="selector-tag">wangxun</span><span class="selector-class">.me</span> 证书还有 253<span class="selector-class">.60501682721554</span> 天过期!</div><div class="line"></div><div class="line"><span class="selector-tag">Example2</span>: </div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span>#   <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"><span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span> <span class="selector-tag">x509</span>: <span class="selector-tag">certificate</span> <span class="selector-tag">is</span> <span class="selector-tag">valid</span> <span class="selector-tag">for</span> <span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span>, <span class="selector-tag">not</span> <span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"></div><div class="line"><span class="selector-tag">Example3</span>: </div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span>#   <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"><span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span> <span class="selector-tag">x509</span>: <span class="selector-tag">certificate</span> <span class="selector-tag">signed</span> <span class="selector-tag">by</span> <span class="selector-tag">unknown</span> <span class="selector-tag">authority</span></div></pre></td></tr></table></figure>
 <ul>
-<li><a href="https://ettercap.github.io/ettercap/" target="_blank" rel="external">ettercap</a></li>
-<li><a href="http://www.thoughtcrime.org/software/sslstrip/" target="_blank" rel="external">sslstrip</a></li>
+<li>Zabbix Item:</li>
 </ul>
-</li>
-<li><p>开启路由转发：echo “1”&gt;/proc/sys/net/ipv4/ip_forward</p>
-</li>
-<li><p>iptables：iptables -t nat -A PREROUTING -p tcp –dport 80 -j REDIRECT -to-port 10000</p>
-</li>
-</ul>
-<blockquote>
-<p>sslstrip的原理：通常访问网址的时候我们大多不会刻意的在前面写上https，也很少会关注我们是通过HTTP协议还是HTTPS协议在浏览。通常要求https访问的站点，在用户通过http访问的时候会以重定向的方式重定向到HTTPS地址，而sslstrip的原理解释拦截向https的重定向请求，担当一个代理的角色，如实转发客户端请求并返回，但是客户端跟中间人的交互采用的是HTTP协议，由于没有建立SSL连接，所以客户端提交的信息都会暴露。</p>
-</blockquote>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#SSL证书监控</span></div><div class="line"><span class="attr">UserParameter</span>=ssl_check[*],/usr/bin/chkcert -h <span class="variable">$1</span> -d <span class="variable">$2</span></div></pre></td></tr></table></figure>
 <ul>
-<li>sslstrip监听：</li>
+<li>Zabbix 触发器(为了防止因为网络抖动获取证书超时问题，这里获取2次的结果，2次都异常才触发)</li>
 </ul>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sslstrip -l <span class="number">10000</span></div></pre></td></tr></table></figure>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="number">172.16</span><span class="selector-class">.x</span><span class="selector-class">.x</span>:ssl_check[www<span class="selector-class">.wangxun</span><span class="selector-class">.me</span>,<span class="number">30</span>].count(#<span class="number">2</span>,<span class="string">"OK"</span>,<span class="string">"ne"</span>)&#125;=<span class="number">2</span></div></pre></td></tr></table></figure>
 <ul>
-<li>开始arp欺骗并嗅探密码：</li>
+<li>Zabbix Action：当SSL证书将在30天内过期，或者证书状态异常时会触发钉钉机器人告警。这里有个问题，当因为网络或者其他原因，请求失败的时候也会触发告警。</li>
 </ul>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">这里如果真实的网关地址是：<span class="number">192.168</span>.<span class="number">1.1</span></div><div class="line">ettercap -Tq -M arp:remote <span class="regexp">//</span><span class="regexp">//</span></div></pre></td></tr></table></figure>
 <ul>
-<li>结果就是各种密码就出现了,SNMP/HTTP/IAMP等等，还会有ssh、ftp等的密码。</li>
-</ul>
-<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">SNMP </span>: <span class="number">192.168</span>.<span class="number">1.42</span>:<span class="number">161</span> -&gt; <span class="attribute">COMMUNITY</span>: public  <span class="attribute">INFO</span>: SNMP v1</div><div class="line"><span class="attribute">IMAP </span>: <span class="number">103.231</span>.<span class="number">69.253</span>:<span class="number">143</span> -&gt; <span class="attribute">USER</span>: xxxx<span class="variable">@xxx</span>.com  <span class="attribute">PASS</span>: <span class="string">"*******"</span></div><div class="line"><span class="attribute">HTTP </span>: <span class="number">117.122</span>.<span class="number">217.6</span>:<span class="number">80</span> -&gt; <span class="attribute">USER</span>:xxxxx -  <span class="attribute">PASS</span>:xxxxx   <span class="attribute">INFO</span>: <span class="attribute">http</span>:<span class="comment">//xxxx/xxxx/article/details/31375935</span></div></pre></td></tr></table></figure>
-<h2 id="三、如何防范"><a href="#三、如何防范" class="headerlink" title="三、如何防范"></a>三、如何防范</h2><ul>
-<li>从源头：绑定网关，这样会使arp欺骗失去作用。</li>
-<li>从业务：启用HSTS，启用后只要和服务器建立过一次成功的链接，后续就会强制使用https，sslstrip就没用了。<a href="https://www.linpx.com/p/hsts-and-hsts-preload-list-enabled-applications.html" target="_blank" rel="external">详情点这里</a></li>
-<li>从习惯：<ul>
-<li>不要蹭网，很多免费的wifi就是专门用来干这个的。。。</li>
-<li>防止被蹭，家庭wifi密码注意保密，被蹭网的危害不止损失一些带宽，被有心人利用会很危险。</li>
-<li>尽量避免用公共wifi。</li>
-<li>有安全意识，在使用共享网络时最好只浏览，不做登入操作。</li>
+<li>参考<ul>
+<li><a href="https://www.secpulse.com/archives/51641.html" target="_blank" rel="external">https://www.secpulse.com/archives/51641.html</a></li>
 </ul>
 </li>
 </ul>
@@ -258,19 +236,23 @@ var _hmt = _hmt || [];
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">ARP欺骗</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Zabbix</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">中间人攻击</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">https监控</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">HTTPS</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">ssl监控</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">sslstrip</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ssl监控命令</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ssl证书监控</a>
         		</li>
       		
 		</ul>
@@ -326,7 +308,7 @@ var _hmt = _hmt || [];
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=https://wangxun.me/2017/09/05/HTTPS剥离进行中间人攻击/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=https://wangxun.me/2017/12/01/HTTPS证书监控/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -340,18 +322,9 @@ var _hmt = _hmt || [];
   
 <nav id="article-nav">
   
-    <a href="/2017/11/16/用Python简单封装zabbix的API/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          用Python简单封装zabbix的API
-        
-      </div>
-    </a>
   
-  
-    <a href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">组合使用免费的VeryCloud&amp;腾讯云CDN加速github静态博客</div>
+    <a href="/2017/11/17/Zabbix的趋势预测和规律性事件监控/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Zabbix的趋势预测和规律性事件监控</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -381,7 +354,7 @@ var _hmt = _hmt || [];
   
 
   
-  <div id="SOHUCS" sid="HTTPS剥离进行中间人攻击" ></div> 
+  <div id="SOHUCS" sid="HTTPS证书监控" ></div> 
 <script type="text/javascript"> 
 window.YiliaChangyanWrap = function() {
     var appid = "cyrPrHatm"; 
