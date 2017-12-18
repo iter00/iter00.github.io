@@ -188,21 +188,21 @@ var _hmt = _hmt || [];
 </li>
 </ul>
 <h3 id="2-实施"><a href="#2-实施" class="headerlink" title="2. 实施"></a>2. 实施</h3><ul>
-<li><p>N2N VPN 分为supernode和edge两种节点，edge通过supernode实现网络连通，在两端edge都有公网IP的情况下，或者两端都是非对称NAT的情况下，通过supernode连接成功后流量就会直接在两个edge之间传输，无需经过supernode转发，在任意一端使用对称NAT（一般家用路由都是这种情况）的情况下，流量就妥妥的全部要supernode来转发。详细介绍：<a href="https://zhuanlan.zhihu.com/p/25344743" target="_blank" rel="external">点这里</a></p>
+<li><p>N2N VPN 分为supernode和edge两种节点，edge通过supernode实现网络连通，在两端edge都有公网IP的情况下，或者两端都是非对称NAT的情况下，通过supernode连接成功后流量就会直接在两个edge之间传输，无需经过supernode转发，在任意一端使用对称NAT（一般家用路由都是这种情况）的情况下，流量就妥妥的全部要supernode来转发。详细介绍：<a href="https://zhuanlan.zhihu.com/p/25344743" target="_blank" rel="noopener">点这里</a></p>
 </li>
 <li><p>在阿里云ECS上部署supernode： 很简单，一个可执行文件放到目标机器上就行了。</p>
-  <figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l <span class="number">1234</span></div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l 1234</div></pre></td></tr></table></figure>
 </li>
 </ul>
 <ul>
 <li>走UDP协议，所以要注意阿里云的安全组，或者防火墙是否开放。</li>
 <li><p>然后启动edge:</p>
-  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.1 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t<span class="built_in"> nat </span>-A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.1 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
 </li>
 </ul>
 <ul>
 <li><p>在公司内网机上部署edge</p>
-  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.2 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t<span class="built_in"> nat </span>-A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.2 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
 </li>
 </ul>
 <ul>
@@ -214,7 +214,7 @@ var _hmt = _hmt || [];
 </ul>
 <ul>
 <li><p>如果ping的通说明VPN已经OK了，接下来做路由：</p>
-  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#这里假设阿里云内网网络的IP段是192.168.1.0/24</span></div><div class="line">route <span class="builtin-name">add</span> -net 192.168.1.0/24 gw 10.0.0.1</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#这里假设阿里云内网网络的IP段是192.168.1.0/24</div><div class="line">route add -net 192.168.1.0/24 gw 10.0.0.1</div></pre></td></tr></table></figure>
 </li>
 <li><p>现在在内网虚拟机上面已经可以访问任意一台192.168.1.0/24这个网络的机器了。</p>
 </li>
@@ -507,6 +507,38 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
               </li>
              
@@ -527,19 +559,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -552,46 +576,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -608,6 +592,42 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">dnsmasq</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">hostapd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">软AP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -628,10 +648,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">

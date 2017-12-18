@@ -15,7 +15,7 @@
 <meta property="og:url" content="https://wangxun.me/2017/12/01/HTTPS证书监控/index.html">
 <meta property="og:site_name" content="踩坑记">
 <meta property="og:description" content="遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提">
-<meta property="og:updated_time" content="2017-12-04T09:38:25.091Z">
+<meta property="og:updated_time" content="2017-12-11T01:35:35.218Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTPS SSL证书状态监控">
 <meta name="twitter:description" content="遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提">
@@ -169,26 +169,26 @@ var _hmt = _hmt || [];
         <blockquote>
 <p>遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提前通知运维，证书即将过期，然后对证书状态异常也能监控起来。</p>
 </blockquote>
-<p>去查阅了一些资料，最终用golang完成了一个小工具，很简单，不足40行代码。自行编译代码或者直接<a href="http://image.wangxun.me/chkcert" target="_blank" rel="external">下载</a>编译好的命令行(只编译了Linux x64)，其他操作系统请自行编译。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"crypto/tls"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"net"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">	<span class="string">"flag"</span></div><div class="line">)</div><div class="line"><span class="keyword">var</span>	dialer = &amp;net.Dialer&#123;Timeout: <span class="number">5</span> * time.Second&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">checkCert</span><span class="params">(server <span class="keyword">string</span>,T <span class="keyword">float64</span> )</span></span> &#123;</div><div class="line">	conn, err := tls.DialWithDialer(dialer, <span class="string">"tcp"</span>, server+<span class="string">":443"</span>, <span class="literal">nil</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		fmt.Println(server, err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Close()</div><div class="line">	valid := conn.VerifyHostname(server)</div><div class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> conn.ConnectionState().PeerCertificates &#123;</div><div class="line">		<span class="keyword">if</span> valid == <span class="literal">nil</span> &#123;</div><div class="line">			now := time.Now()</div><div class="line">			sumDay := c.NotAfter.Local().Sub(now).Hours()/<span class="number">24</span></div><div class="line">			<span class="keyword">if</span> sumDay &lt; T&#123;</div><div class="line">				fmt.Println(server,<span class="string">"证书还有"</span>,sumDay,<span class="string">"天过期!"</span>)</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				fmt.Println(<span class="string">"OK"</span>)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">	host := flag.String(<span class="string">"h"</span>, <span class="string">""</span>, <span class="string">"HTTPS站点域名或IP,例：wangxun.me(不能带协议头)"</span>)</div><div class="line">	T := flag.Float64(<span class="string">"d"</span>,<span class="number">30</span>,<span class="string">"距离过期还有多少天时提醒。单位为天，默认为30天。"</span>)</div><div class="line">	flag.Parse()</div><div class="line">	checkCert(*host,*T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>去查阅了一些资料，最终用golang完成了一个小工具，很简单，不足40行代码。自行编译代码或者直接<a href="http://image.wangxun.me/chkcert" target="_blank" rel="noopener">下载</a>编译好的命令行(只编译了Linux x64)，其他操作系统请自行编译。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"crypto/tls"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"net"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">	<span class="string">"flag"</span></div><div class="line">)</div><div class="line"><span class="keyword">var</span>	dialer = &amp;net.Dialer&#123;Timeout: <span class="number">5</span> * time.Second&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">checkCert</span><span class="params">(server <span class="keyword">string</span>,T <span class="keyword">float64</span> )</span></span> &#123;</div><div class="line">	conn, err := tls.DialWithDialer(dialer, <span class="string">"tcp"</span>, server+<span class="string">":443"</span>, <span class="literal">nil</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		fmt.Println(server, err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Close()</div><div class="line">	valid := conn.VerifyHostname(server)</div><div class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> conn.ConnectionState().PeerCertificates &#123;</div><div class="line">		<span class="keyword">if</span> valid == <span class="literal">nil</span> &#123;</div><div class="line">			now := time.Now()</div><div class="line">			sumDay := c.NotAfter.Local().Sub(now).Hours()/<span class="number">24</span></div><div class="line">			<span class="keyword">if</span> sumDay &lt; T&#123;</div><div class="line">				fmt.Println(server,<span class="string">"证书还有"</span>,sumDay,<span class="string">"天过期!"</span>)</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				fmt.Println(<span class="string">"OK"</span>)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">	host := flag.String(<span class="string">"h"</span>, <span class="string">""</span>, <span class="string">"HTTPS站点域名或IP,例：wangxun.me(不能带协议头)"</span>)</div><div class="line">	T := flag.Float64(<span class="string">"d"</span>,<span class="number">30</span>,<span class="string">"距离过期还有多少天时提醒。单位为天，默认为30天。"</span>)</div><div class="line">	flag.Parse()</div><div class="line">	checkCert(*host,*T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <ul>
 <li>命令行用法：</li>
 </ul>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">Usage</span> <span class="selector-tag">of</span> <span class="selector-tag">chkcert</span>:</div><div class="line">  <span class="selector-tag">-d</span> <span class="selector-tag">float</span></div><div class="line">    	距离过期还有多少天时提醒。单位为天，默认为30天。 (<span class="selector-tag">default</span> 30)</div><div class="line">  <span class="selector-tag">-h</span> <span class="selector-tag">string</span></div><div class="line">    	<span class="selector-tag">HTTPS</span>站点域名或<span class="selector-tag">IP</span>,例：<span class="selector-tag">wangxun</span><span class="selector-class">.me</span>(不能带协议头)</div><div class="line"></div><div class="line"><span class="selector-tag">Example1</span>:</div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span># <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">wangxun</span><span class="selector-class">.me</span> <span class="selector-tag">-d</span> 300</div><div class="line"><span class="selector-tag">wangxun</span><span class="selector-class">.me</span> 证书还有 253<span class="selector-class">.60501682721554</span> 天过期!</div><div class="line"></div><div class="line"><span class="selector-tag">Example2</span>: </div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span>#   <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"><span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span> <span class="selector-tag">x509</span>: <span class="selector-tag">certificate</span> <span class="selector-tag">is</span> <span class="selector-tag">valid</span> <span class="selector-tag">for</span> <span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span>, <span class="selector-tag">not</span> <span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"></div><div class="line"><span class="selector-tag">Example3</span>: </div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span>#   <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"><span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span> <span class="selector-tag">x509</span>: <span class="selector-tag">certificate</span> <span class="selector-tag">signed</span> <span class="selector-tag">by</span> <span class="selector-tag">unknown</span> <span class="selector-tag">authority</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Usage of chkcert:</div><div class="line">  -d <span class="built_in">float</span></div><div class="line">    	距离过期还有多少天时提醒。单位为天，默认为30天。 (default 30)</div><div class="line">  -h string</div><div class="line">    	HTTPS站点域名或IP,例：wangxun.me(不能带协议头)</div><div class="line"></div><div class="line">Example1:</div><div class="line"></div><div class="line">[root@my ~]<span class="comment"># chkcert -h wangxun.me -d 300</span></div><div class="line">wangxun.me 证书还有 253.60501682721554 天过期!</div><div class="line"></div><div class="line">Example2: </div><div class="line"></div><div class="line">[root@my ~]<span class="comment">#   chkcert -h www.12306.cn</span></div><div class="line">www.12306.cn x509: certificate is valid <span class="keyword">for</span> kyfw.12306.cn, not www.12306.cn</div><div class="line"></div><div class="line">Example3: </div><div class="line"></div><div class="line">[root@my ~]<span class="comment">#   chkcert -h kyfw.12306.cn</span></div><div class="line">kyfw.12306.cn x509: certificate signed by unknown authority</div></pre></td></tr></table></figure>
 <ul>
 <li>Zabbix Item:</li>
 </ul>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#SSL证书监控</span></div><div class="line"><span class="attr">UserParameter</span>=ssl_check[*],/usr/bin/chkcert -h <span class="variable">$1</span> -d <span class="variable">$2</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#SSL证书监控</span></div><div class="line">UserParameter=ssl_check[*],/usr/bin/chkcert -h <span class="variable">$1</span> -d <span class="variable">$2</span></div></pre></td></tr></table></figure>
 <ul>
 <li>Zabbix 触发器(为了防止因为网络抖动获取证书超时问题，这里获取2次的结果，2次都异常才触发)</li>
 </ul>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="number">172.16</span><span class="selector-class">.x</span><span class="selector-class">.x</span>:ssl_check[www<span class="selector-class">.wangxun</span><span class="selector-class">.me</span>,<span class="number">30</span>].count(#<span class="number">2</span>,<span class="string">"OK"</span>,<span class="string">"ne"</span>)&#125;=<span class="number">2</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;172.16.x.x:ssl_check[www.wangxun.me,30].count(<span class="comment">#2,"OK","ne")&#125;=2</span></div></pre></td></tr></table></figure>
 <ul>
 <li>Zabbix Action：当SSL证书将在30天内过期，或者证书状态异常时会触发钉钉机器人告警。这里有个问题，当因为网络或者其他原因，请求失败的时候也会触发告警。</li>
 </ul>
 <ul>
 <li>参考<ul>
-<li><a href="https://www.secpulse.com/archives/51641.html" target="_blank" rel="external">https://www.secpulse.com/archives/51641.html</a></li>
+<li><a href="https://www.secpulse.com/archives/51641.html" target="_blank" rel="noopener">https://www.secpulse.com/archives/51641.html</a></li>
 </ul>
 </li>
 </ul>
@@ -321,6 +321,15 @@ var _hmt = _hmt || [];
 
   
 <nav id="article-nav">
+  
+    <a href="/2017/12/09/利用树莓派DIY便携式多功能路由器/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          利用树莓派DIY便携式多功能路由器
+        
+      </div>
+    </a>
   
   
     <a href="/2017/11/17/Zabbix的趋势预测和规律性事件监控/" id="article-nav-older" class="article-nav-link-wrap">
@@ -461,6 +470,38 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
               </li>
              
@@ -481,19 +522,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -506,46 +539,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -562,6 +555,42 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">dnsmasq</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">hostapd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">软AP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -582,10 +611,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">

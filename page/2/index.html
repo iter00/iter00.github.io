@@ -146,6 +146,167 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-组合使用VeryCloud-腾讯云加速github静态博客" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/">组合使用免费的VeryCloud&amp;腾讯云CDN加速github静态博客</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/" class="archive-article-date">
+  	<time datetime="2017-08-29T11:58:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-29</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="国内主要的免费CDN"><a href="#国内主要的免费CDN" class="headerlink" title="国内主要的免费CDN"></a>国内主要的免费CDN</h3><table>
+<thead>
+<tr>
+<th>厂商</th>
+<th>免费额度</th>
+<th>免费HTTPS</th>
+<th>节点数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VeryCloud</td>
+<td>50G/月</td>
+<td>是</td>
+<td>10+</td>
+</tr>
+<tr>
+<td>腾讯云</td>
+<td>10G/月</td>
+<td>是</td>
+<td>10+</td>
+</tr>
+<tr>
+<td>360网站卫士</td>
+<td>不限</td>
+<td>是</td>
+<td>1</td>
+</tr>
+<tr>
+<td>百度云加速</td>
+<td>不限</td>
+<td>否</td>
+<td>6+</td>
+</tr>
+<tr>
+<td>又拍云</td>
+<td>15G/月</td>
+<td>否</td>
+<td>10+</td>
+</tr>
+<tr>
+<td>七牛</td>
+<td>10G/月</td>
+<td>否</td>
+<td>10+</td>
+</tr>
+<tr>
+<td>加速乐</td>
+<td>3600GB/月</td>
+<td>否</td>
+<td>10+</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>支持免费https的只有VeryCloud、腾讯云、360网站卫士这三个，其中腾讯云支持直接在线申请免费的SSL证书。另一个支持免费证书的是又拍云，只是又拍云的https按照访问次数计费，每一万次访问0.05元RMB。流量免费15G。因为博主需求HTTPS，所以目前选择了VeryCloud和腾讯云。</li>
+</ul>
+<h3 id="上HTTPS的好处"><a href="#上HTTPS的好处" class="headerlink" title="上HTTPS的好处"></a>上HTTPS的好处</h3><ul>
+<li>google和百度都说了：优先收录https站点的页面，因此，利于SEO</li>
+<li>安全，这个对我这种纯静态的站点其实没什么卵用。</li>
+<li>逼格，，咳咳，拿来装B不错。</li>
+</ul>
+<h3 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h3><ul>
+<li>腾讯云的优点不用多说大厂风范，服务品质高。但是免费流量只有每月10G这点就不够大气了，目前我这个小博客足够用。但是随着流量增多就未必了。有必要未雨绸缪一下。</li>
+<li>选VeryCloud的原因主要是因为支持HTTPS同时又有50G的免费流量，但是实际测试发现到github.io的源站老不可用。动不动就闹情绪。开启永久在线才算是OK。</li>
+<li>坑爹的360，从全家桶开始坑人，一路坑。之前好好的多节点。现在搞成只有一个高防节点，这TM已经不能说是CDN了。唉，，其实功能后台都挺好的。</li>
+<li>其实不需要HTTPS的话直接上百度云加速挺好。但是一点HTTPS的免费额度都没有就比较恶心了。</li>
+<li>又拍云，，有15G流量，但是计费的时候HTTPS按访问次数计费是个什么鬼？</li>
+<li>七牛：七牛是我一直很欣赏也很喜欢的。功能做的很完美。很牛B，刚获得阿里10个亿的投资是有道理的。但是吐槽的原因一样也是因为没有免费的HTTPS</li>
+<li>加速乐，牛轰轰的安全公司知道创宇旗下，免费额度给力。但是跟其他选择着实没有什么亮点，3600G免费流量要是支持HTTPS就hi到翻了。然并卵。</li>
+</ul>
+<h3 id="实施"><a href="#实施" class="headerlink" title="实施"></a>实施</h3><ul>
+<li>其实没啥技术含量，本文主要是吐槽文。实在是国内的免费CDN要备案不说，资源也不够丰富。</li>
+<li>原理就是利用dnspod的cname负载均衡，目前的分配方案是：VeryCloud负责电信、联通这两个大户的流量，剩下的移动、以及一些小毛运营商的就由腾讯云负责，腾讯资源多，节点应该会比较丰富，小运营商也能兼顾的到。至于国外，github.io本身就是有国外CDN的，直接就回源（其实毛线的国外流量。。。）。来张图吧：</li>
+</ul>
+<p><img src="/assets/img/CDN.png" alt="img"></p>
+<ul>
+<li>最后晒下成果，还是蛮给力的，，国内最高的延迟也才93毫秒。秒开无压力。</li>
+</ul>
+<p><img src="/assets/img/CDN2.png" alt="img"></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">腾讯云CDN</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">VeryCloud</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">github静态博客</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-记一次tcp-tw-recycle引发的事故" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -285,15 +446,15 @@ var _hmt = _hmt || [];
 </blockquote>
 <ol>
 <li><p>约束固定业务到同一个节点：使用marathon的Constraints参数，实例：</p>
- <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">    "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">    "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">    "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">    "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>CLUSTER<span class="string">", "</span><span class="number">10.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">"]]</span></div><div class="line"><span class="string">  &#125;'</span></div></pre></td></tr></table></figure>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H &quot;Content-type: application/json&quot; marathon:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;demo&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;echo  Hello world！&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;CLUSTER&quot;, &quot;10.0.0.1&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure>
 </li>
 <li><p>约束单个节点上只能有一个实例（当定义一个业务有多个实例的时候，marathon可能会在同一个节点上启动多个实例，此约束可以保障同一个业务在节点上只有一个实力，避免所有实例跑在一个节点上）：</p>
-  <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">   "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">   "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">   "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">   "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>UNIQUE<span class="string">"]]</span></div><div class="line"><span class="string"> &#125;'</span></div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H &quot;Content-type: application/json&quot; marathon:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;demo&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;echo  Hello world！&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;UNIQUE&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
 </li>
 </ol>
 <ol>
 <li><p>详细约束,以下实例将不会在hostname为demo-1、demo-2、demo-3上运行。</p>
-  <figure class="highlight scilab"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H <span class="string">"Content-type: application/json"</span> marathon:<span class="number">8080</span>/v2/apps -d <span class="string">'&#123;</span></div><div class="line"><span class="string">   "</span>id<span class="string">": "</span>demo<span class="string">",</span></div><div class="line"><span class="string">   "</span>cmd<span class="string">": "</span>echo  Hello world！<span class="string">",</span></div><div class="line"><span class="string">   "</span>instances<span class="string">": 3,</span></div><div class="line"><span class="string">   "</span>constraints<span class="string">": [["</span>hostname<span class="string">", "</span>UNLIKE<span class="string">", "</span>demo-[<span class="number">1</span><span class="number">-3</span>]<span class="string">"]]</span></div><div class="line"><span class="string"> &#125;'</span></div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ curl -X POST -H &quot;Content-type: application/json&quot; marathon:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;demo&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;echo  Hello world！&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;UNLIKE&quot;, &quot;demo-[1-3]&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
 </li>
 </ol>
 
@@ -378,19 +539,19 @@ var _hmt = _hmt || [];
     <div class="article-entry" itemprop="articleBody">
       
         <pre><code>作为解释型语言，Python的有一个痛点是代码保护，像C、golang等开发的产品，天赋里就自带源码保护属性，而python通常都是源码裸奔。虽然可以编译成pyc但是很容易就会被反编译回来。公司的一款重量级产品因为基于swift，所以开发语言自然是Python。那么作为一款商业产品，代码保护当然不能用pyc这种基本么什么卵用的方法，本文介绍一个神器，不仅加密还能加速哦！请出我们的神器：Cython
-</code></pre><h3 id="Cython的安装和使用都很简单："><a href="#Cython的安装和使用都很简单：" class="headerlink" title="Cython的安装和使用都很简单："></a>Cython的安装和使用都很简单：</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip <span class="keyword">install</span> Cython</div></pre></td></tr></table></figure>
-<h3 id="setup-py-示例"><a href="#setup-py-示例" class="headerlink" title="setup.py 示例"></a>setup.py 示例</h3><p>编译test目录下所有的py文件。<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">from <span class="keyword">distutils.core </span>import setup</div><div class="line">from Cython.<span class="keyword">Build </span>import cythonize</div><div class="line">from <span class="keyword">distutils.extension </span>import <span class="keyword">Extension</span></div><div class="line"><span class="keyword"></span></div><div class="line"><span class="keyword">extensions </span>= [  <span class="comment">#这里定义要保护的代码路径</span></div><div class="line">    <span class="keyword">Extension("*", </span>[<span class="string">"test/*.py"</span>]),</div><div class="line"></div><div class="line">]</div><div class="line"></div><div class="line">setup(</div><div class="line">    name = <span class="string">"storUltra console library"</span>,</div><div class="line">    <span class="keyword">ext_modules </span>= cythonize(<span class="keyword">extensions),</span></div><div class="line"><span class="keyword">)</span></div></pre></td></tr></table></figure></p>
-<h3 id="准备示例python代码"><a href="#准备示例python代码" class="headerlink" title="准备示例python代码"></a>准备示例python代码</h3><figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">mkdir</span> test</div><div class="line"><span class="keyword">vim</span> test/<span class="built_in">index</span>.<span class="keyword">py</span></div></pre></td></tr></table></figure>
-<figure class="highlight d"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/usr/bin/python</span></div><div class="line">a = <span class="string">"helloworld"</span></div></pre></td></tr></table></figure>
+</code></pre><h3 id="Cython的安装和使用都很简单："><a href="#Cython的安装和使用都很简单：" class="headerlink" title="Cython的安装和使用都很简单："></a>Cython的安装和使用都很简单：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install Cython</div></pre></td></tr></table></figure>
+<h3 id="setup-py-示例"><a href="#setup-py-示例" class="headerlink" title="setup.py 示例"></a>setup.py 示例</h3><p>编译test目录下所有的py文件。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> distutils.core <span class="keyword">import</span> setup</div><div class="line"><span class="keyword">from</span> Cython.Build <span class="keyword">import</span> cythonize</div><div class="line"><span class="keyword">from</span> distutils.extension <span class="keyword">import</span> Extension</div><div class="line"></div><div class="line">extensions = [  <span class="comment">#这里定义要保护的代码路径</span></div><div class="line">    Extension(<span class="string">"*"</span>, [<span class="string">"test/*.py"</span>]),</div><div class="line"></div><div class="line">]</div><div class="line"></div><div class="line">setup(</div><div class="line">    name = <span class="string">"storUltra console library"</span>,</div><div class="line">    ext_modules = cythonize(extensions),</div><div class="line">)</div></pre></td></tr></table></figure></p>
+<h3 id="准备示例python代码"><a href="#准备示例python代码" class="headerlink" title="准备示例python代码"></a>准备示例python代码</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mkdir <span class="built_in">test</span></div><div class="line">vim <span class="built_in">test</span>/index.py</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/python</span></div><div class="line">a = <span class="string">"helloworld"</span></div></pre></td></tr></table></figure>
 <p>注意文件内容只是包含一个变量a，值为hellworld<br>目前目录结构：</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">│   └── demo.py</div><div class="line">└── test.py</div></pre></td></tr></table></figure>
-<h3 id="执行编译"><a href="#执行编译" class="headerlink" title="执行编译"></a>执行编译</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup<span class="selector-class">.py</span> build_ext --inplace</div></pre></td></tr></table></figure>
-<p>编译之后的目录结构：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">├── build</div><div class="line">│   └── temp<span class="selector-class">.macosx-10</span>.<span class="number">12</span>-intel-<span class="number">2.7</span></div><div class="line">│       └── test</div><div class="line">│           └── demo.o</div><div class="line">├── demo.so</div><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">    ├── demo.c</div><div class="line">    └── demo.py</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">│   └── demo.py</div><div class="line">└── test.py</div></pre></td></tr></table></figure>
+<h3 id="执行编译"><a href="#执行编译" class="headerlink" title="执行编译"></a>执行编译</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup.py build_ext --inplace</div></pre></td></tr></table></figure>
+<p>编译之后的目录结构：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">├── build</div><div class="line">│   └── temp.macosx-10.12-intel-2.7</div><div class="line">│       └── test</div><div class="line">│           └── demo.o</div><div class="line">├── demo.so</div><div class="line">├── setup.py</div><div class="line">├── test</div><div class="line">    ├── demo.c</div><div class="line">    └── demo.py</div></pre></td></tr></table></figure></p>
 <p>现在是不是发现demo.so?这个就是编译出来的文件。我们试试来调用它：</p>
 <p>新建一个test.py文件内容如下：</p>
-<figure class="highlight d"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/usr/bin/python</span></div><div class="line"><span class="keyword">import</span> demo</div><div class="line">print demo.a</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/python</div><div class="line">import demo</div><div class="line">print demo.a</div></pre></td></tr></table></figure>
 <p>我们已模块的形式import进来，print下a的值，试试执行：</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">wangxundeAir:<span class="keyword">test</span> wangxun$ python <span class="keyword">test</span>.py</div><div class="line">Helloworld</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">wangxundeAir:test wangxun$ python test.py</div><div class="line">Helloworld</div></pre></td></tr></table></figure>
 <p>输出正常。尝试cat 一下demo.so 会发现是一堆乱码。Cython直接将python源码编译成了C模块。所以我们就有了C编译后的代码保护属性。</p>
 
       
@@ -675,100 +836,6 @@ append initrd=initrd.img ks=cdrom:/isolinux/anaconda-ks.cfg rd.live.check
 
 
   
-    <article id="post-利用vagrant快速构建实验环境" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/01/15/利用vagrant快速构建实验环境/">利用vagrant快速构建实验环境</a>
-    </h1>
-  
-
-        
-        <a href="/2017/01/15/利用vagrant快速构建实验环境/" class="archive-article-date">
-  	<time datetime="2017-01-15T06:29:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-01-15</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>日常工作中，无论是开发、运维、还是测试都难免遇到需要准备实验&amp;开发环境的情况，为了避免成为装机工一个快速准备环境的方案还是要有的。传统的虚拟机+快照的方式应对单机测试环境是OK的，但是应对需要多主机的环境就显得没效率了。而另外一个最具效率的Docker方案，在很多场景下是没办法代替虚拟机和物理机的。vagrant提供了便捷、快速、可定制程度高的虚拟机管理方案。对接VirtualBox或者vmware，可迅速的构建环境。配合provisioner可以自动进行业务的部署，例如虚拟机部署之后调用shell脚本部署业务代码。</p>
-</blockquote>
-<h3 id="1-vagrant-环境安装"><a href="#1-vagrant-环境安装" class="headerlink" title="1.vagrant 环境安装"></a>1.vagrant 环境安装</h3><p>vagrant可以对接VirtualBox和vmware，建议用VirtualBox，跨平台，所以在MAC/Linux/windows都可以使用。VirtualBox的版本建议不要用最新版，实际使用过程中使用最新版的VirtualBox总会遇到一些莫名其妙的虚拟机假死。</p>
-<ul>
-<li>下载安装VirtualBox：<a href="https://www.virtualbox.org/wiki/Downloads" target="_blank" rel="external">链接</a></li>
-<li>下载安装vagrant：<a href="https://www.vagrantup.com/downloads.html" target="_blank" rel="external">链接</a></li>
-</ul>
-<h3 id="2-下载vagrant-box镜像"><a href="#2-下载vagrant-box镜像" class="headerlink" title="2. 下载vagrant box镜像"></a>2. 下载vagrant box镜像</h3><figure class="highlight dts"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">http:</span><span class="comment">//www.vagrantbox.es/</span></div></pre></td></tr></table></figure>
-<p>上面地址中有大量的各种发行版的镜像。本文中以使用centos7为例：<a href="https://f0fff3908f081cb6461b407be80daf97f07ac418.googledrive.com/host/0BwtuV7VyVTSkUG1PM3pCeDJ4dVE/centos7.box" target="_blank" rel="external">点击下载</a></p>
-<h3 id="3-将box镜像添加到vagrant环境中"><a href="#3-将box镜像添加到vagrant环境中" class="headerlink" title="3. 将box镜像添加到vagrant环境中"></a>3. 将box镜像添加到vagrant环境中</h3><figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vagrant <span class="built_in">box</span> <span class="built_in">add</span> centosbox centos7.<span class="built_in">box</span></div></pre></td></tr></table></figure>
-<h3 id="4-准备Vagrantfile"><a href="#4-准备Vagrantfile" class="headerlink" title="4. 准备Vagrantfile"></a>4. 准备Vagrantfile</h3><ul>
-<li>vagrant使用ruby开发的，所以懂得ruby的话编写Vagrantfile会很轻松。一个Vagrantfile分享：</li>
-</ul>
-<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># -*- mode: ruby -*-</span></div><div class="line"><span class="comment"># vi: set ft=ruby :</span></div><div class="line"></div><div class="line">nodes = &#123;</div><div class="line">    <span class="string">'su-admin'</span> =&gt; [<span class="number">1</span>, <span class="number">20</span>],</div><div class="line">    <span class="string">'su-proxy'</span>   =&gt; [<span class="number">1</span>, <span class="number">100</span>],</div><div class="line">    <span class="string">'su-storage'</span> =&gt; [<span class="number">3</span>, <span class="number">200</span>],</div><div class="line">    <span class="string">'su-gateway'</span> =&gt; [<span class="number">1</span>, <span class="number">150</span>],</div><div class="line">&#125;</div><div class="line"></div><div class="line">Vagrant.configure(<span class="string">"2"</span>) <span class="keyword">do</span> <span class="params">|config|</span></div><div class="line"></div><div class="line">    nodes.each <span class="keyword">do</span> <span class="params">|prefix, (count, ip_start)|</span></div><div class="line">        count.times <span class="keyword">do</span> <span class="params">|i|</span></div><div class="line">            hostname = <span class="string">"%s-%02d"</span> % [prefix, (i+<span class="number">1</span>)]</div><div class="line">            config.ssh.insert_key = <span class="literal">false</span></div><div class="line">            config.vm.define <span class="string">"<span class="subst">#&#123;hostname&#125;</span>"</span> <span class="keyword">do</span> <span class="params">|box|</span></div><div class="line">                puts <span class="string">"working on <span class="subst">#&#123;hostname&#125;</span> with ip of 192.168.100.<span class="subst">#&#123;ip_start+i&#125;</span>"</span></div><div class="line"></div><div class="line">                box.vm.box = <span class="string">"centos71"</span></div><div class="line">                box.vm.hostname = <span class="string">"<span class="subst">#&#123;hostname&#125;</span>"</span></div><div class="line">                box.vm.network <span class="symbol">:private_network</span>, <span class="symbol">:ip</span> =&gt; <span class="string">"192.168.100.<span class="subst">#&#123;ip_start+i&#125;</span>"</span>, <span class="symbol">:netmask</span> =&gt; <span class="string">"255.255.255.0"</span></div><div class="line">                box.vm.network <span class="symbol">:private_network</span>, <span class="symbol">:ip</span> =&gt; <span class="string">"10.0.10.<span class="subst">#&#123;ip_start+i&#125;</span>"</span>, <span class="symbol">:netmask</span> =&gt; <span class="string">"255.255.255.0"</span></div><div class="line">                box.vm.network <span class="symbol">:private_network</span>, <span class="symbol">:ip</span> =&gt; <span class="string">"10.0.20.<span class="subst">#&#123;ip_start+i&#125;</span>"</span>, <span class="symbol">:netmask</span> =&gt; <span class="string">"255.255.255.0"</span></div><div class="line">                box.vm.network <span class="symbol">:private_network</span>, <span class="symbol">:ip</span> =&gt; <span class="string">"10.0.30.<span class="subst">#&#123;ip_start+i&#125;</span>"</span>, <span class="symbol">:netmask</span> =&gt; <span class="string">"255.255.255.0"</span></div><div class="line">                <span class="keyword">if</span> prefix == <span class="string">"su-admin"</span></div><div class="line">                    box.vm.network <span class="string">"forwarded_port"</span>, <span class="symbol">guest:</span> <span class="number">80</span>, <span class="symbol">host:</span> <span class="number">10080</span></div><div class="line">                    box.vm.network <span class="string">"forwarded_port"</span>, <span class="symbol">guest:</span> <span class="number">3000</span>, <span class="symbol">host:</span> <span class="number">13000</span></div><div class="line">                    box.vm.network <span class="string">"forwarded_port"</span>, <span class="symbol">guest:</span> <span class="number">8083</span>, <span class="symbol">host:</span> <span class="number">18083</span></div><div class="line">                    box.vm.network <span class="string">"forwarded_port"</span>, <span class="symbol">guest:</span> <span class="number">8086</span>, <span class="symbol">host:</span> <span class="number">18086</span></div><div class="line">                    box.vm.network <span class="string">"forwarded_port"</span>, <span class="symbol">guest:</span> <span class="number">8080</span>, <span class="symbol">host:</span> <span class="number">18080</span></div><div class="line">                    box.vm.provider <span class="symbol">:virtualbox</span> <span class="keyword">do</span> <span class="params">|v|</span></div><div class="line">                        v.customize [<span class="string">'modifyvm'</span>, <span class="symbol">:id</span>, <span class="string">'--memory'</span>, <span class="string">'2048'</span>]</div><div class="line">                    <span class="keyword">end</span></div><div class="line">                <span class="keyword">end</span></div><div class="line">                <span class="keyword">if</span> prefix == <span class="string">"su-proxy"</span></div><div class="line">                    box.vm.network <span class="string">"forwarded_port"</span>, <span class="symbol">guest:</span> <span class="number">8080</span>, <span class="symbol">host:</span> <span class="number">28080</span></div><div class="line">                <span class="keyword">end</span></div><div class="line">                <span class="keyword">if</span> prefix == <span class="string">"su-storage"</span></div><div class="line">                    box.vm.provider <span class="symbol">:virtualbox</span> <span class="keyword">do</span> <span class="params">|v|</span></div><div class="line">                        (<span class="number">0</span>..<span class="number">9</span>).each <span class="keyword">do</span> <span class="params">|disk|</span></div><div class="line">                            file_to_disk = <span class="string">"data/1%s-%d.vdi"</span> % [hostname, disk]</div><div class="line">                            <span class="keyword">unless</span> File.exist?(file_to_disk)</div><div class="line">                               v.customize [<span class="string">'createhd'</span>, <span class="string">'--filename'</span>, file_to_disk, <span class="string">'--size'</span>, <span class="number">1000</span> * <span class="number">1024</span>]</div><div class="line">                            <span class="keyword">end</span></div><div class="line">                            v.customize [<span class="string">'storageattach'</span>, <span class="symbol">:id</span>, <span class="string">'--storagectl'</span>, <span class="string">'SATA Controller'</span>, <span class="string">'--port'</span>, disk + <span class="number">1</span>, <span class="string">'--device'</span>, <span class="number">0</span>, <span class="string">'--type'</span>, <span class="string">'hdd'</span>, <span class="string">'--medium'</span>, file_to_disk]</div><div class="line">                        <span class="keyword">end</span></div><div class="line">                    <span class="keyword">end</span></div><div class="line">                <span class="keyword">end</span></div><div class="line">		<span class="keyword">if</span> prefix == <span class="string">"su-gateway"</span></div><div class="line">		    box.vm.provider <span class="symbol">:virtualbox</span> <span class="keyword">do</span> <span class="params">|v|</span></div><div class="line">			file_to_disk = <span class="string">"data/1%s-1.vdi"</span> % hostname</div><div class="line">			<span class="keyword">unless</span> File.exist?(file_to_disk)</div><div class="line">		            v.customize [<span class="string">'createhd'</span>, <span class="string">'--filename'</span>, file_to_disk, <span class="string">'--size'</span>, <span class="number">1000</span> * <span class="number">1024</span>]</div><div class="line">			<span class="keyword">end</span></div><div class="line">			v.customize [<span class="string">'storageattach'</span>, <span class="symbol">:id</span>, <span class="string">'--storagectl'</span>, <span class="string">'SATA Controller'</span>, <span class="string">'--port'</span>, <span class="number">1</span>, <span class="string">'--device'</span>, <span class="number">0</span>, <span class="string">'--type'</span>, <span class="string">'hdd'</span>, <span class="string">'--medium'</span>, file_to_disk]</div><div class="line">                    <span class="keyword">end</span></div><div class="line">		<span class="keyword">end</span></div><div class="line">            <span class="keyword">end</span></div><div class="line">        <span class="keyword">end</span></div><div class="line">    <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="string">``</span><span class="string">` </span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string">### 5. 启动环境</span></div></pre></td></tr></table></figure>
-<p>cd new-deploy &amp;&amp; vagrant up</p>
-<figure class="highlight clean"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">### <span class="number">6.</span> vagrant 命令</div><div class="line"></div><div class="line">* 镜像管理</div></pre></td></tr></table></figure>
-<p>vagrant box add             #添加镜像<br>vagrant package                #打包镜像（将一个虚拟机打包成box镜像）</p>
-<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="bullet">* </span>虚拟机管理</div></pre></td></tr></table></figure>
-<p>vagrant up                        #启动虚拟机<br>vagrant halt                    #关闭虚拟机<br>vagrant suspend                 #挂起虚拟机<br>vagrant resume                     #恢复虚拟机<br>vagrant reload                    #重启虚拟机<br>vagrant destroy                    #销毁虚拟机<br>vagrant status                    #列出虚拟机状态<br>vagrant global-status            #监控虚拟机</p>
-<p>```</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">vagrant</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/01/15/利用vagrant快速构建实验环境/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
@@ -866,6 +933,38 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
               </li>
              
@@ -886,19 +985,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -911,46 +1002,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -967,6 +1018,42 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">dnsmasq</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">hostapd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">软AP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -987,10 +1074,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">

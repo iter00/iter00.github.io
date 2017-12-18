@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="踩坑记">
 <meta property="og:description" content="场景：公司业务分布在三个地方的机房里。分别是杭州、苏州、无锡，每个机房都有都只有个别有公网IP的服务器对外。剩下的全部是只有内网网络。想要访问机房的内网服务器，就必须要跳来跳去，或者就是更坑爹的连上VPN。更不爽的是，想要统一化管理比如说用ansible同步规则的时候就蛋疼了。作为一个有理想的懒人，咱不能被这点问题给拦住，，想想不能偷懒只能一个机房一个机房的去同步的日子吧。。。 使用技术 shad">
 <meta property="og:image" content="https://wangxun.me/assets/img/hangzhoujiagou.png">
-<meta property="og:updated_time" content="2017-10-31T07:29:14.000Z">
+<meta property="og:updated_time" content="2017-12-11T01:39:48.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用Shadowsocks实现多地内网互连">
 <meta name="twitter:description" content="场景：公司业务分布在三个地方的机房里。分别是杭州、苏州、无锡，每个机房都有都只有个别有公网IP的服务器对外。剩下的全部是只有内网网络。想要访问机房的内网服务器，就必须要跳来跳去，或者就是更坑爹的连上VPN。更不爽的是，想要统一化管理比如说用ansible同步规则的时候就蛋疼了。作为一个有理想的懒人，咱不能被这点问题给拦住，，想想不能偷懒只能一个机房一个机房的去同步的日子吧。。。 使用技术 shad">
@@ -182,12 +182,12 @@ var _hmt = _hmt || [];
 <h3 id="方案："><a href="#方案：" class="headerlink" title="方案："></a>方案：</h3><h4 id="在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。"><a href="#在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。" class="headerlink" title="在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。"></a>在苏州和无锡各选择一台有公网IP的机器并部署shadowsocks服务端。</h4><ul>
 <li>shadowsocks安装</li>
 </ul>
-<figure class="highlight cmake"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip <span class="keyword">install</span> shadowsocks</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install shadowsocks</div></pre></td></tr></table></figure>
 <ul>
 <li>Shadowsocks Server 端配置：/etc/shadowsocks.json</li>
 </ul>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  <span class="attr">"server"</span>: <span class="string">"0.0.0.0"</span>,</div><div class="line">  <span class="attr">"server_port"</span>: <span class="number">10080</span>,</div><div class="line">  <span class="attr">"password"</span>: <span class="string">"密码"</span>,</div><div class="line">  <span class="attr">"method"</span>: <span class="string">"aes-256-cfb"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl <span class="builtin-name">enable</span> shadowsocks &amp;&amp; systemctl start shadowsocks</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl enable shadowsocks &amp;&amp; systemctl start shadowsocks</div></pre></td></tr></table></figure>
 <h4 id="部署shadowsocks客户端"><a href="#部署shadowsocks客户端" class="headerlink" title="部署shadowsocks客户端"></a>部署shadowsocks客户端</h4><ul>
 <li><p>在杭州机器上安装shadowsocks客户端，分别连线至苏州和无锡并启用本地socks5代理。监听端口：苏州：10.2.1.7:1080    无锡内网:10.2.1.7:1081</p>
 </li>
@@ -202,20 +202,20 @@ var _hmt = _hmt || [];
 <h4 id="杭州服务器上部署redsocks"><a href="#杭州服务器上部署redsocks" class="headerlink" title="杭州服务器上部署redsocks"></a>杭州服务器上部署redsocks</h4><ul>
 <li>编译redsocks：</li>
 </ul>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">yum -<span class="keyword">y</span> install gcc libevent livevent-devel</div><div class="line">git clone http<span class="variable">s:</span>//github.<span class="keyword">com</span>/darkk/redsocks</div><div class="line"><span class="keyword">cd</span> redsocks</div><div class="line"><span class="keyword">make</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">yum -y install gcc libevent livevent-devel</div><div class="line">git <span class="built_in">clone</span> https://github.com/darkk/redsocks</div><div class="line"><span class="built_in">cd</span> redsocks</div><div class="line">make</div></pre></td></tr></table></figure>
 <ul>
 <li>安装：<br>redsocks安装很简单，只需要把编译出来的单文件redsocks复制到系统的任意path中然后把配置文件模板复制到/etc下并重命名成redsocks.conf。或者绝对路径执行也OK。</li>
 </ul>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo <span class="keyword">cp</span> redsocks /usr/bin/</div><div class="line"><span class="keyword">cp</span> redsocks.<span class="keyword">conf</span>.example /etc/redsocks.<span class="keyword">conf</span></div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo cp redsocks /usr/bin/</div><div class="line">cp redsocks.conf.example /etc/redsocks.conf</div></pre></td></tr></table></figure>
 <ul>
 <li>redsocks：配置连接到苏州的本地监听端口1080，redsocks对应端口：12345，连接无锡的本地监听端口：1081，redsocks对应端口：12346；</li>
 </ul>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">vim</span> /etc/redsocks.<span class="keyword">conf</span></div></pre></td></tr></table></figure>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">redsocks &#123;                  </div><div class="line">  local_ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;     </div><div class="line">  local_port = <span class="number">12345</span>;</div><div class="line">  ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;</div><div class="line">  port = <span class="number">1080</span>;          <span class="comment">//连接苏州</span></div><div class="line">  type = socks5;  <span class="comment">// or socks4, http-connect</span></div><div class="line">&#125;</div><div class="line">redsocks &#123;</div><div class="line">  local_ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;</div><div class="line">  local_port = <span class="number">12346</span>;   </div><div class="line">  ip = <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>;</div><div class="line">  port = <span class="number">1081</span>;          <span class="comment">//连接无锡</span></div><div class="line">  type = socks5;  <span class="comment">// or socks4, http-connect</span></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vim /etc/redsocks.conf</div></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">redsocks &#123;                  </div><div class="line">  local_ip = 127.0.0.1;     </div><div class="line">  local_port = 12345;</div><div class="line">  ip = 127.0.0.1;</div><div class="line">  port = 1080;          //连接苏州</div><div class="line">  type = socks5;  // or socks4, http-connect</div><div class="line">&#125;</div><div class="line">redsocks &#123;</div><div class="line">  local_ip = 127.0.0.1;</div><div class="line">  local_port = 12346;   </div><div class="line">  ip = 127.0.0.1;</div><div class="line">  port = 1081;          //连接无锡</div><div class="line">  type = socks5;  // or socks4, http-connect</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <h4 id="定义iptables规则"><a href="#定义iptables规则" class="headerlink" title="定义iptables规则"></a>定义iptables规则</h4><ul>
 <li>杭州服务器定义iptables nat表中的OUTPUT链，新增规则，分别将出去的流量目标是苏州机房的流量REDIRECT转到12345端口，目标是无锡内网的流量REDIRECT到12346端口。</li>
 </ul>
-<figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#将去苏州内网的TCP流量转发到12345端口</span></div><div class="line">iptables -t<span class="built_in"> nat </span>-A OUTPUT -d 10.2.1.0/24 -p tcp -j REDIRECT --to-port 12345</div><div class="line"></div><div class="line"><span class="comment">#将去无锡内网的TCP流量转发到12346端口</span></div><div class="line">iptables -t<span class="built_in"> nat </span>-A OUTPUT -d 172.16.9.0/24 -p tcp -j REDIRECT --to-port 12346</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">#将去苏州内网的TCP流量转发到12345端口</div><div class="line">iptables -t nat -A OUTPUT -d 10.2.1.0/24 -p tcp -j REDIRECT --to-port 12345</div><div class="line"></div><div class="line">#将去无锡内网的TCP流量转发到12346端口</div><div class="line">iptables -t nat -A OUTPUT -d 172.16.9.0/24 -p tcp -j REDIRECT --to-port 12346</div></pre></td></tr></table></figure>
 <h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>到此我们就完成了配置，可以尝试下，配置没有问题的话，跳板机上连接所有机器的内网IP都是可以联通的了。</p>
 
       
@@ -483,6 +483,38 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
               </li>
              
@@ -503,19 +535,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -528,46 +552,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -584,6 +568,42 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">dnsmasq</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">hostapd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">软AP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -604,10 +624,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">

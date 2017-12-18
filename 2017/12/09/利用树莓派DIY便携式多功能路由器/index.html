@@ -6,17 +6,21 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://wangxun.me">
-  <title>Tag: https监控 | 踩坑记</title>
+  <title>利用树莓派DIY便携式多功能路由器 | 踩坑记</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
-<meta property="og:type" content="website">
-<meta property="og:title" content="踩坑记">
-<meta property="og:url" content="https://wangxun.me/tags/https监控/index.html">
+  <meta name="description" content="思路是这样的：树莓派自带无线和有线两张网卡，有线网卡作为互联网出口，默认用DHCP方式获取IP上网，而无线网卡使用hostapd做软AP提供无线网络服务，利用dnsmasq提供dhcp服务和DNS服务。这里的DHCP服务是让连接树莓派的无线客户端能动态获取IP，DNS服务主要用来做DNS劫持。利用N2N VPN 实现内网打洞。最终达成的效果是，在家只需要把树莓派的网线插到家里的路由器上就行了，其">
+<meta name="keywords" content="树莓派,N2N,VPN,dnsmasq,hostapd,软AP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用树莓派DIY便携式多功能路由器">
+<meta property="og:url" content="https://wangxun.me/2017/12/09/利用树莓派DIY便携式多功能路由器/index.html">
 <meta property="og:site_name" content="踩坑记">
-<meta property="og:description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
+<meta property="og:description" content="思路是这样的：树莓派自带无线和有线两张网卡，有线网卡作为互联网出口，默认用DHCP方式获取IP上网，而无线网卡使用hostapd做软AP提供无线网络服务，利用dnsmasq提供dhcp服务和DNS服务。这里的DHCP服务是让连接树莓派的无线客户端能动态获取IP，DNS服务主要用来做DNS劫持。利用N2N VPN 实现内网打洞。最终达成的效果是，在家只需要把树莓派的网线插到家里的路由器上就行了，其">
+<meta property="og:image" content="http://image.wangxun.me/rpi-n2n-dnsmasq-hostap.png">
+<meta property="og:updated_time" content="2017-12-18T01:05:50.483Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="踩坑记">
-<meta name="twitter:description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
+<meta name="twitter:title" content="利用树莓派DIY便携式多功能路由器">
+<meta name="twitter:description" content="思路是这样的：树莓派自带无线和有线两张网卡，有线网卡作为互联网出口，默认用DHCP方式获取IP上网，而无线网卡使用hostapd做软AP提供无线网络服务，利用dnsmasq提供dhcp服务和DNS服务。这里的DHCP服务是让连接树莓派的无线客户端能动态获取IP，DNS服务主要用来做DNS劫持。利用N2N VPN 实现内网打洞。最终达成的效果是，在家只需要把树莓派的网线插到家里的路由器上就行了，其">
+<meta name="twitter:image" content="http://image.wangxun.me/rpi-n2n-dnsmasq-hostap.png">
   
     <link rel="alternative" href="/atom.xml" title="踩坑记" type="application/atom+xml">
   
@@ -144,76 +148,271 @@ var _hmt = _hmt || [];
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-利用树莓派DIY便携式多功能路由器" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2017" class="archive-year">2017</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/12/01/HTTPS证书监控/" class="archive-article-date">
-  	<time datetime="2017-12-01T14:41:57.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-12-01</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/12/01/HTTPS证书监控/">HTTPS SSL证书状态监控</a>
+    <h1 class="article-title" itemprop="name">
+      利用树莓派DIY便携式多功能路由器
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2017/12/09/利用树莓派DIY便携式多功能路由器/" class="archive-article-date">
+  	<time datetime="2017-12-09T12:01:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-12-09</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>思路是这样的：树莓派自带无线和有线两张网卡，有线网卡作为互联网出口，默认用DHCP方式获取IP上网，而无线网卡使用hostapd做软AP提供无线网络服务，利用dnsmasq提供dhcp服务和DNS服务。这里的DHCP服务是让连接树莓派的无线客户端能动态获取IP，DNS服务主要用来做DNS劫持。利用N2N VPN 实现内网打洞。最终达成的效果是，在家只需要把树莓派的网线插到家里的路由器上就行了，其他无需任何配置。树莓派只需要有联网的能力，不需要公网IP。</p>
+</blockquote>
+<h3 id="一张很有爱的拓扑图"><a href="#一张很有爱的拓扑图" class="headerlink" title="一张很有爱的拓扑图"></a>一张很有爱的拓扑图</h3><p><img src="http://image.wangxun.me/rpi-n2n-dnsmasq-hostap.png" alt=""></p>
+<h3 id="一、系统配置（所有N2N-edge节点都需要如下配置）"><a href="#一、系统配置（所有N2N-edge节点都需要如下配置）" class="headerlink" title="一、系统配置（所有N2N edge节点都需要如下配置）"></a>一、系统配置（所有N2N edge节点都需要如下配置）</h3><ul>
+<li><p>开启路由转发</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl -w <span class="string">"net.ipv4.ip_forward=1"</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>设置iptables防火墙</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
+<ul>
+<li><p>因为我的树莓派刷的是centos7系统，因此添加了卸载firewalld并安装iptables服务的步骤：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">systemctl mask firewalld</div><div class="line">systemctl stop firewalld</div><div class="line">yum remove firewalld -y</div><div class="line">yum install iptables-services -y</div><div class="line">systemctl <span class="built_in">enable</span> iptables</div><div class="line">systemctl start iptables</div><div class="line">iptables -F</div><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div><div class="line">iptables-save &gt;/etc/sysconfig/iptables</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>香港VPS上同时启动supernode和edge</p>
+<ul>
+<li><p>启动supernode提供流量中转（家庭普通路由下流量基本全部要经过supernode中转，要关注VPS流量是不是扛得住， 当然如果是非对称NAT则流量可以直接在edge间交互。）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l 1024</div></pre></td></tr></table></figure>
+</li>
+<li><p>VPS上的edge主要是提供国外网站的访问。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.1 -l vpsip:1234 -d edge0 -c wangxun.me -k password</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>公司内网服务器上启动edge</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.100 -l vpsip:1234 -d edge0 -c wangxun.me -k password</div></pre></td></tr></table></figure>
+</li>
+<li><p>树莓派上启动edge</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.2 -l vpsip:1234 -d edge0 -c wangxun.me -k password</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="二、N2N-VPN配置"><a href="#二、N2N-VPN配置" class="headerlink" title="二、N2N VPN配置"></a>二、N2N VPN配置</h3><ul>
+<li>N2N 源码下载</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git <span class="built_in">clone</span> https://github.com/meyerd/n2n.git</div></pre></td></tr></table></figure>
+<ul>
+<li>N2N 编译    (最终会生成两个可执行文件，edge和supernode)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">$ yum -y install gcc gcc-c++ openssl-devel cmake</div><div class="line">$ <span class="built_in">cd</span> n2n/n2n_v2</div><div class="line">$ mkdir build</div><div class="line">$ <span class="built_in">cd</span> build</div><div class="line">$ cmake ..</div><div class="line">$ make</div><div class="line">$ sudo make install</div></pre></td></tr></table></figure>
+<ul>
+<li>supernode</li>
+</ul>
+<h3 id="三、dnsmasq配置-树莓派"><a href="#三、dnsmasq配置-树莓派" class="headerlink" title="三、dnsmasq配置(树莓派)"></a>三、dnsmasq配置(树莓派)</h3><ul>
+<li>dhcp相关配置</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">interface=wlan0</div><div class="line">dhcp-range=192.168.1.100,192.168.1.200,12h</div><div class="line">dhcp-option=6,192.168.1.1		<span class="comment">#设置无线网络DHCP获取到的DNS</span></div><div class="line">dhcp-option=3,192.168.1.1		<span class="comment">#设置无线网络DHCP获取到的网关</span></div></pre></td></tr></table></figure>
+<ul>
+<li>设置DNS</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">listen-address=127.0.0.1,192.168.1.1    <span class="comment">#设置dns服务监听地址</span></div><div class="line">server=/xxxx.com/172.16.101.53	<span class="comment">#设置公司内网域名用公司内部的DNS来解析。</span></div><div class="line"></div><div class="line"><span class="comment">#以下是DNS劫持的常用的国外域名:</span></div><div class="line">address=/google.com/108.177.97.113</div><div class="line">address=/www.google.com/108.177.97.113</div><div class="line">address=/photos.google.com/172.217.27.142</div><div class="line">address=/google.com.hk/108.177.97.94</div><div class="line">address=/www.google.com.hk/108.177.97.94</div><div class="line">address=/accounts.google.com/216.58.200.45</div></pre></td></tr></table></figure>
+<h3 id="四、hostapd配置（树莓派）"><a href="#四、hostapd配置（树莓派）" class="headerlink" title="四、hostapd配置（树莓派）"></a>四、hostapd配置（树莓派）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">interface=wlan0</div><div class="line">driver=nl80211</div><div class="line">ssid=my</div><div class="line">hw_mode=g</div><div class="line">channel=11</div><div class="line">dtim_period=1</div><div class="line">rts_threshold=2347</div><div class="line">fragm_threshold=2346</div><div class="line">auth_algs=2</div><div class="line">wpa=2</div><div class="line">wpa_passphrase=password</div><div class="line">wpa_key_mgmt=WPA-PSK</div><div class="line">wpa_pairwise=CCMP</div><div class="line">rsn_pairwise=CCMP</div><div class="line">driver=nl80211</div><div class="line">wpa_ptk_rekey=600</div></pre></td></tr></table></figure>
+<h3 id="五、路由设置"><a href="#五、路由设置" class="headerlink" title="五、路由设置"></a>五、路由设置</h3><ul>
+<li>树莓派上的路由</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#到公司内网路由走在公司内网的edge</span></div><div class="line">ip route add 172.16.101.0/24 via 10.0.0.100 dev edge0</div><div class="line"></div><div class="line"><span class="comment">#谷歌相关的路由走香港的edge，这里的网络是DNS劫持的IP或者网络。</span></div><div class="line">ip route add 108.177.97.0/24 via 10.0.0.1 dev edge0</div><div class="line">ip route add 216.58.0.0/16 via 10.0.0.1 dev edge0</div><div class="line">ip route add 172.217.0.0/16 via 10.0.0.1 dev edge0</div></pre></td></tr></table></figure>
+<ul>
+<li>公司内网机的路由</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#到192.168.1.0/24的网络指向路由10.0.0.2（树莓派）</span></div><div class="line">ip route add 192.168.1.0/24 via 10.0.0.2 edge0</div></pre></td></tr></table></figure>
+<ul>
+<li>香港vps路由</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#到192.168.1.0/24的网络指向路由10.0.0.2（树莓派）</span></div><div class="line">ip route add 192.168.1.0/24 via 10.0.0.2 edge0</div></pre></td></tr></table></figure>
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我喝咖啡！<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/img/zhifubao.png">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/img/weixin.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Zabbix</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">树莓派</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">https监控</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">N2N</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">ssl监控</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">VPN</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ssl监控命令</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">dnsmasq</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ssl证书监控</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">hostapd</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">软AP</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=https://wangxun.me/2017/12/09/利用树莓派DIY便携式多功能路由器/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2017/12/01/HTTPS证书监控/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">HTTPS SSL证书状态监控</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+  <div id="SOHUCS" sid="利用树莓派DIY便携式多功能路由器" ></div> 
+<script type="text/javascript"> 
+window.YiliaChangyanWrap = function() {
+    var appid = "cyrPrHatm"; 
+    var conf = "1c08167df28cbb3eea7ffca06fd08bbb"; 
+    var width = window.innerWidth || document.documentElement.clientWidth; 
+    if (width < 960) { 
+    window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="//changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("//changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+}
+</script>
+  
+
+  
+
+  
 
 
           </div>
@@ -236,9 +435,9 @@ var _hmt = _hmt || [];
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,

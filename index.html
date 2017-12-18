@@ -146,6 +146,163 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-利用树莓派DIY便携式多功能路由器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/12/09/利用树莓派DIY便携式多功能路由器/">利用树莓派DIY便携式多功能路由器</a>
+    </h1>
+  
+
+        
+        <a href="/2017/12/09/利用树莓派DIY便携式多功能路由器/" class="archive-article-date">
+  	<time datetime="2017-12-09T12:01:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-12-09</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>思路是这样的：树莓派自带无线和有线两张网卡，有线网卡作为互联网出口，默认用DHCP方式获取IP上网，而无线网卡使用hostapd做软AP提供无线网络服务，利用dnsmasq提供dhcp服务和DNS服务。这里的DHCP服务是让连接树莓派的无线客户端能动态获取IP，DNS服务主要用来做DNS劫持。利用N2N VPN 实现内网打洞。最终达成的效果是，在家只需要把树莓派的网线插到家里的路由器上就行了，其他无需任何配置。树莓派只需要有联网的能力，不需要公网IP。</p>
+</blockquote>
+<h3 id="一张很有爱的拓扑图"><a href="#一张很有爱的拓扑图" class="headerlink" title="一张很有爱的拓扑图"></a>一张很有爱的拓扑图</h3><p><img src="http://image.wangxun.me/rpi-n2n-dnsmasq-hostap.png" alt=""></p>
+<h3 id="一、系统配置（所有N2N-edge节点都需要如下配置）"><a href="#一、系统配置（所有N2N-edge节点都需要如下配置）" class="headerlink" title="一、系统配置（所有N2N edge节点都需要如下配置）"></a>一、系统配置（所有N2N edge节点都需要如下配置）</h3><ul>
+<li><p>开启路由转发</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl -w <span class="string">"net.ipv4.ip_forward=1"</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>设置iptables防火墙</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
+<ul>
+<li><p>因为我的树莓派刷的是centos7系统，因此添加了卸载firewalld并安装iptables服务的步骤：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">systemctl mask firewalld</div><div class="line">systemctl stop firewalld</div><div class="line">yum remove firewalld -y</div><div class="line">yum install iptables-services -y</div><div class="line">systemctl <span class="built_in">enable</span> iptables</div><div class="line">systemctl start iptables</div><div class="line">iptables -F</div><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div><div class="line">iptables-save &gt;/etc/sysconfig/iptables</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>香港VPS上同时启动supernode和edge</p>
+<ul>
+<li><p>启动supernode提供流量中转（家庭普通路由下流量基本全部要经过supernode中转，要关注VPS流量是不是扛得住， 当然如果是非对称NAT则流量可以直接在edge间交互。）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l 1024</div></pre></td></tr></table></figure>
+</li>
+<li><p>VPS上的edge主要是提供国外网站的访问。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.1 -l vpsip:1234 -d edge0 -c wangxun.me -k password</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>公司内网服务器上启动edge</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.100 -l vpsip:1234 -d edge0 -c wangxun.me -k password</div></pre></td></tr></table></figure>
+</li>
+<li><p>树莓派上启动edge</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.2 -l vpsip:1234 -d edge0 -c wangxun.me -k password</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="二、N2N-VPN配置"><a href="#二、N2N-VPN配置" class="headerlink" title="二、N2N VPN配置"></a>二、N2N VPN配置</h3><ul>
+<li>N2N 源码下载</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git <span class="built_in">clone</span> https://github.com/meyerd/n2n.git</div></pre></td></tr></table></figure>
+<ul>
+<li>N2N 编译    (最终会生成两个可执行文件，edge和supernode)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">$ yum -y install gcc gcc-c++ openssl-devel cmake</div><div class="line">$ <span class="built_in">cd</span> n2n/n2n_v2</div><div class="line">$ mkdir build</div><div class="line">$ <span class="built_in">cd</span> build</div><div class="line">$ cmake ..</div><div class="line">$ make</div><div class="line">$ sudo make install</div></pre></td></tr></table></figure>
+<ul>
+<li>supernode</li>
+</ul>
+<h3 id="三、dnsmasq配置-树莓派"><a href="#三、dnsmasq配置-树莓派" class="headerlink" title="三、dnsmasq配置(树莓派)"></a>三、dnsmasq配置(树莓派)</h3><ul>
+<li>dhcp相关配置</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">interface=wlan0</div><div class="line">dhcp-range=192.168.1.100,192.168.1.200,12h</div><div class="line">dhcp-option=6,192.168.1.1		<span class="comment">#设置无线网络DHCP获取到的DNS</span></div><div class="line">dhcp-option=3,192.168.1.1		<span class="comment">#设置无线网络DHCP获取到的网关</span></div></pre></td></tr></table></figure>
+<ul>
+<li>设置DNS</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">listen-address=127.0.0.1,192.168.1.1    <span class="comment">#设置dns服务监听地址</span></div><div class="line">server=/xxxx.com/172.16.101.53	<span class="comment">#设置公司内网域名用公司内部的DNS来解析。</span></div><div class="line"></div><div class="line"><span class="comment">#以下是DNS劫持的常用的国外域名:</span></div><div class="line">address=/google.com/108.177.97.113</div><div class="line">address=/www.google.com/108.177.97.113</div><div class="line">address=/photos.google.com/172.217.27.142</div><div class="line">address=/google.com.hk/108.177.97.94</div><div class="line">address=/www.google.com.hk/108.177.97.94</div><div class="line">address=/accounts.google.com/216.58.200.45</div></pre></td></tr></table></figure>
+<h3 id="四、hostapd配置（树莓派）"><a href="#四、hostapd配置（树莓派）" class="headerlink" title="四、hostapd配置（树莓派）"></a>四、hostapd配置（树莓派）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">interface=wlan0</div><div class="line">driver=nl80211</div><div class="line">ssid=my</div><div class="line">hw_mode=g</div><div class="line">channel=11</div><div class="line">dtim_period=1</div><div class="line">rts_threshold=2347</div><div class="line">fragm_threshold=2346</div><div class="line">auth_algs=2</div><div class="line">wpa=2</div><div class="line">wpa_passphrase=password</div><div class="line">wpa_key_mgmt=WPA-PSK</div><div class="line">wpa_pairwise=CCMP</div><div class="line">rsn_pairwise=CCMP</div><div class="line">driver=nl80211</div><div class="line">wpa_ptk_rekey=600</div></pre></td></tr></table></figure>
+<h3 id="五、路由设置"><a href="#五、路由设置" class="headerlink" title="五、路由设置"></a>五、路由设置</h3><ul>
+<li>树莓派上的路由</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#到公司内网路由走在公司内网的edge</span></div><div class="line">ip route add 172.16.101.0/24 via 10.0.0.100 dev edge0</div><div class="line"></div><div class="line"><span class="comment">#谷歌相关的路由走香港的edge，这里的网络是DNS劫持的IP或者网络。</span></div><div class="line">ip route add 108.177.97.0/24 via 10.0.0.1 dev edge0</div><div class="line">ip route add 216.58.0.0/16 via 10.0.0.1 dev edge0</div><div class="line">ip route add 172.217.0.0/16 via 10.0.0.1 dev edge0</div></pre></td></tr></table></figure>
+<ul>
+<li>公司内网机的路由</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#到192.168.1.0/24的网络指向路由10.0.0.2（树莓派）</span></div><div class="line">ip route add 192.168.1.0/24 via 10.0.0.2 edge0</div></pre></td></tr></table></figure>
+<ul>
+<li>香港vps路由</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#到192.168.1.0/24的网络指向路由10.0.0.2（树莓派）</span></div><div class="line">ip route add 192.168.1.0/24 via 10.0.0.2 edge0</div></pre></td></tr></table></figure>
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">树莓派</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">N2N</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">VPN</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">dnsmasq</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">hostapd</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">软AP</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/12/09/利用树莓派DIY便携式多功能路由器/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-HTTPS证书监控" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -169,26 +326,26 @@ var _hmt = _hmt || [];
         <blockquote>
 <p>遇到了一个坑爹的事件，存放静态文件的CDN，HTTPS证书突然过期，导致客户端在访问主站时所有的样式、js、图片请求出错：Failed to load resource: net::ERR_INSECURE_RESPONSE。因为监控取得的状态码仍然是200，所以就在没有任何告警的情况下，出现了灾难级别的业务故障。好在非业务高峰时段，而且很快就更新证书恢复了。老板要求要有监控。需求很简单，要求提前通知运维，证书即将过期，然后对证书状态异常也能监控起来。</p>
 </blockquote>
-<p>去查阅了一些资料，最终用golang完成了一个小工具，很简单，不足40行代码。自行编译代码或者直接<a href="http://image.wangxun.me/chkcert" target="_blank" rel="external">下载</a>编译好的命令行(只编译了Linux x64)，其他操作系统请自行编译。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"crypto/tls"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"net"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">	<span class="string">"flag"</span></div><div class="line">)</div><div class="line"><span class="keyword">var</span>	dialer = &amp;net.Dialer&#123;Timeout: <span class="number">5</span> * time.Second&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">checkCert</span><span class="params">(server <span class="keyword">string</span>,T <span class="keyword">float64</span> )</span></span> &#123;</div><div class="line">	conn, err := tls.DialWithDialer(dialer, <span class="string">"tcp"</span>, server+<span class="string">":443"</span>, <span class="literal">nil</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		fmt.Println(server, err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Close()</div><div class="line">	valid := conn.VerifyHostname(server)</div><div class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> conn.ConnectionState().PeerCertificates &#123;</div><div class="line">		<span class="keyword">if</span> valid == <span class="literal">nil</span> &#123;</div><div class="line">			now := time.Now()</div><div class="line">			sumDay := c.NotAfter.Local().Sub(now).Hours()/<span class="number">24</span></div><div class="line">			<span class="keyword">if</span> sumDay &lt; T&#123;</div><div class="line">				fmt.Println(server,<span class="string">"证书还有"</span>,sumDay,<span class="string">"天过期!"</span>)</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				fmt.Println(<span class="string">"OK"</span>)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">	host := flag.String(<span class="string">"h"</span>, <span class="string">""</span>, <span class="string">"HTTPS站点域名或IP,例：wangxun.me(不能带协议头)"</span>)</div><div class="line">	T := flag.Float64(<span class="string">"d"</span>,<span class="number">30</span>,<span class="string">"距离过期还有多少天时提醒。单位为天，默认为30天。"</span>)</div><div class="line">	flag.Parse()</div><div class="line">	checkCert(*host,*T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>去查阅了一些资料，最终用golang完成了一个小工具，很简单，不足40行代码。自行编译代码或者直接<a href="http://image.wangxun.me/chkcert" target="_blank" rel="noopener">下载</a>编译好的命令行(只编译了Linux x64)，其他操作系统请自行编译。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"crypto/tls"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	<span class="string">"net"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">	<span class="string">"flag"</span></div><div class="line">)</div><div class="line"><span class="keyword">var</span>	dialer = &amp;net.Dialer&#123;Timeout: <span class="number">5</span> * time.Second&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">checkCert</span><span class="params">(server <span class="keyword">string</span>,T <span class="keyword">float64</span> )</span></span> &#123;</div><div class="line">	conn, err := tls.DialWithDialer(dialer, <span class="string">"tcp"</span>, server+<span class="string">":443"</span>, <span class="literal">nil</span>)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">		fmt.Println(server, err)</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">defer</span> conn.Close()</div><div class="line">	valid := conn.VerifyHostname(server)</div><div class="line">	<span class="keyword">for</span> _, c := <span class="keyword">range</span> conn.ConnectionState().PeerCertificates &#123;</div><div class="line">		<span class="keyword">if</span> valid == <span class="literal">nil</span> &#123;</div><div class="line">			now := time.Now()</div><div class="line">			sumDay := c.NotAfter.Local().Sub(now).Hours()/<span class="number">24</span></div><div class="line">			<span class="keyword">if</span> sumDay &lt; T&#123;</div><div class="line">				fmt.Println(server,<span class="string">"证书还有"</span>,sumDay,<span class="string">"天过期!"</span>)</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				fmt.Println(<span class="string">"OK"</span>)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">	host := flag.String(<span class="string">"h"</span>, <span class="string">""</span>, <span class="string">"HTTPS站点域名或IP,例：wangxun.me(不能带协议头)"</span>)</div><div class="line">	T := flag.Float64(<span class="string">"d"</span>,<span class="number">30</span>,<span class="string">"距离过期还有多少天时提醒。单位为天，默认为30天。"</span>)</div><div class="line">	flag.Parse()</div><div class="line">	checkCert(*host,*T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <ul>
 <li>命令行用法：</li>
 </ul>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">Usage</span> <span class="selector-tag">of</span> <span class="selector-tag">chkcert</span>:</div><div class="line">  <span class="selector-tag">-d</span> <span class="selector-tag">float</span></div><div class="line">    	距离过期还有多少天时提醒。单位为天，默认为30天。 (<span class="selector-tag">default</span> 30)</div><div class="line">  <span class="selector-tag">-h</span> <span class="selector-tag">string</span></div><div class="line">    	<span class="selector-tag">HTTPS</span>站点域名或<span class="selector-tag">IP</span>,例：<span class="selector-tag">wangxun</span><span class="selector-class">.me</span>(不能带协议头)</div><div class="line"></div><div class="line"><span class="selector-tag">Example1</span>:</div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span># <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">wangxun</span><span class="selector-class">.me</span> <span class="selector-tag">-d</span> 300</div><div class="line"><span class="selector-tag">wangxun</span><span class="selector-class">.me</span> 证书还有 253<span class="selector-class">.60501682721554</span> 天过期!</div><div class="line"></div><div class="line"><span class="selector-tag">Example2</span>: </div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span>#   <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"><span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span> <span class="selector-tag">x509</span>: <span class="selector-tag">certificate</span> <span class="selector-tag">is</span> <span class="selector-tag">valid</span> <span class="selector-tag">for</span> <span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span>, <span class="selector-tag">not</span> <span class="selector-tag">www</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"></div><div class="line"><span class="selector-tag">Example3</span>: </div><div class="line"></div><div class="line"><span class="selector-attr">[root@my ~]</span>#   <span class="selector-tag">chkcert</span> <span class="selector-tag">-h</span> <span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span></div><div class="line"><span class="selector-tag">kyfw</span><span class="selector-class">.12306</span><span class="selector-class">.cn</span> <span class="selector-tag">x509</span>: <span class="selector-tag">certificate</span> <span class="selector-tag">signed</span> <span class="selector-tag">by</span> <span class="selector-tag">unknown</span> <span class="selector-tag">authority</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Usage of chkcert:</div><div class="line">  -d <span class="built_in">float</span></div><div class="line">    	距离过期还有多少天时提醒。单位为天，默认为30天。 (default 30)</div><div class="line">  -h string</div><div class="line">    	HTTPS站点域名或IP,例：wangxun.me(不能带协议头)</div><div class="line"></div><div class="line">Example1:</div><div class="line"></div><div class="line">[root@my ~]<span class="comment"># chkcert -h wangxun.me -d 300</span></div><div class="line">wangxun.me 证书还有 253.60501682721554 天过期!</div><div class="line"></div><div class="line">Example2: </div><div class="line"></div><div class="line">[root@my ~]<span class="comment">#   chkcert -h www.12306.cn</span></div><div class="line">www.12306.cn x509: certificate is valid <span class="keyword">for</span> kyfw.12306.cn, not www.12306.cn</div><div class="line"></div><div class="line">Example3: </div><div class="line"></div><div class="line">[root@my ~]<span class="comment">#   chkcert -h kyfw.12306.cn</span></div><div class="line">kyfw.12306.cn x509: certificate signed by unknown authority</div></pre></td></tr></table></figure>
 <ul>
 <li>Zabbix Item:</li>
 </ul>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#SSL证书监控</span></div><div class="line"><span class="attr">UserParameter</span>=ssl_check[*],/usr/bin/chkcert -h <span class="variable">$1</span> -d <span class="variable">$2</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#SSL证书监控</span></div><div class="line">UserParameter=ssl_check[*],/usr/bin/chkcert -h <span class="variable">$1</span> -d <span class="variable">$2</span></div></pre></td></tr></table></figure>
 <ul>
 <li>Zabbix 触发器(为了防止因为网络抖动获取证书超时问题，这里获取2次的结果，2次都异常才触发)</li>
 </ul>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="number">172.16</span><span class="selector-class">.x</span><span class="selector-class">.x</span>:ssl_check[www<span class="selector-class">.wangxun</span><span class="selector-class">.me</span>,<span class="number">30</span>].count(#<span class="number">2</span>,<span class="string">"OK"</span>,<span class="string">"ne"</span>)&#125;=<span class="number">2</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;172.16.x.x:ssl_check[www.wangxun.me,30].count(<span class="comment">#2,"OK","ne")&#125;=2</span></div></pre></td></tr></table></figure>
 <ul>
 <li>Zabbix Action：当SSL证书将在30天内过期，或者证书状态异常时会触发钉钉机器人告警。这里有个问题，当因为网络或者其他原因，请求失败的时候也会触发告警。</li>
 </ul>
 <ul>
 <li>参考<ul>
-<li><a href="https://www.secpulse.com/archives/51641.html" target="_blank" rel="external">https://www.secpulse.com/archives/51641.html</a></li>
+<li><a href="https://www.secpulse.com/archives/51641.html" target="_blank" rel="noopener">https://www.secpulse.com/archives/51641.html</a></li>
 </ul>
 </li>
 </ul>
@@ -337,7 +494,7 @@ var _hmt = _hmt || [];
 </li>
 <li>一个触发器表达式实例：</li>
 </ul>
-<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#当前最新<span class="selector-tag">10</span>分钟的<span class="selector-tag">CPU</span>占用率平均值比<span class="selector-tag">7</span>天前上升了<span class="selector-tag">30%</span>而且当前最新<span class="selector-tag">10</span>分钟的<span class="selector-tag">CPU</span>平均占用率超过<span class="selector-tag">30%</span></div><div class="line">&#123;<span class="selector-tag">Template</span> <span class="selector-tag">OS</span> <span class="selector-tag">Linux</span><span class="selector-pseudo">:system.cpu.util</span><span class="selector-attr">[]</span><span class="selector-class">.avg</span>(<span class="number">10</span>m)&#125;/&#123;<span class="selector-tag">Template</span> <span class="selector-tag">OS</span> <span class="selector-tag">Linux</span><span class="selector-pseudo">:system.cpu.util</span><span class="selector-attr">[]</span><span class="selector-class">.avg</span>(<span class="number">10</span>m,<span class="number">7</span>d)&#125; &gt;<span class="selector-tag">1</span><span class="selector-class">.3</span> <span class="selector-tag">and</span> &#123;<span class="selector-tag">Template</span> <span class="selector-tag">OS</span> <span class="selector-tag">Linux</span><span class="selector-pseudo">:system.cpu.util</span><span class="selector-attr">[]</span><span class="selector-class">.avg</span>(<span class="number">10</span>m)&#125; &gt;<span class="selector-tag">30</span></div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#当前最新10分钟的CPU占用率平均值比7天前上升了30%而且当前最新10分钟的CPU平均占用率超过30%</div><div class="line">&#123;Template OS Linux:system.cpu.util[].avg(10m)&#125;/&#123;Template OS Linux:system.cpu.util[].avg(10m,7d)&#125; &gt;1.3 and &#123;Template OS Linux:system.cpu.util[].avg(10m)&#125; &gt;30</div></pre></td></tr></table></figure>
 
       
 
@@ -449,21 +606,21 @@ var _hmt = _hmt || [];
 </li>
 </ul>
 <h3 id="2-实施"><a href="#2-实施" class="headerlink" title="2. 实施"></a>2. 实施</h3><ul>
-<li><p>N2N VPN 分为supernode和edge两种节点，edge通过supernode实现网络连通，在两端edge都有公网IP的情况下，或者两端都是非对称NAT的情况下，通过supernode连接成功后流量就会直接在两个edge之间传输，无需经过supernode转发，在任意一端使用对称NAT（一般家用路由都是这种情况）的情况下，流量就妥妥的全部要supernode来转发。详细介绍：<a href="https://zhuanlan.zhihu.com/p/25344743" target="_blank" rel="external">点这里</a></p>
+<li><p>N2N VPN 分为supernode和edge两种节点，edge通过supernode实现网络连通，在两端edge都有公网IP的情况下，或者两端都是非对称NAT的情况下，通过supernode连接成功后流量就会直接在两个edge之间传输，无需经过supernode转发，在任意一端使用对称NAT（一般家用路由都是这种情况）的情况下，流量就妥妥的全部要supernode来转发。详细介绍：<a href="https://zhuanlan.zhihu.com/p/25344743" target="_blank" rel="noopener">点这里</a></p>
 </li>
 <li><p>在阿里云ECS上部署supernode： 很简单，一个可执行文件放到目标机器上就行了。</p>
-  <figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l <span class="number">1234</span></div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l 1234</div></pre></td></tr></table></figure>
 </li>
 </ul>
 <ul>
 <li>走UDP协议，所以要注意阿里云的安全组，或者防火墙是否开放。</li>
 <li><p>然后启动edge:</p>
-  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.1 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t<span class="built_in"> nat </span>-A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.1 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
 </li>
 </ul>
 <ul>
 <li><p>在公司内网机上部署edge</p>
-  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.2 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t<span class="built_in"> nat </span>-A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">edge -a 10.0.0.2 -l supernodeIP:1234 -d edge0 -c 网络名称 -k 秘钥</div><div class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</div></pre></td></tr></table></figure>
 </li>
 </ul>
 <ul>
@@ -475,7 +632,7 @@ var _hmt = _hmt || [];
 </ul>
 <ul>
 <li><p>如果ping的通说明VPN已经OK了，接下来做路由：</p>
-  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#这里假设阿里云内网网络的IP段是192.168.1.0/24</span></div><div class="line">route <span class="builtin-name">add</span> -net 192.168.1.0/24 gw 10.0.0.1</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#这里假设阿里云内网网络的IP段是192.168.1.0/24</div><div class="line">route add -net 192.168.1.0/24 gw 10.0.0.1</div></pre></td></tr></table></figure>
 </li>
 <li><p>现在在内网虚拟机上面已经可以访问任意一台192.168.1.0/24这个网络的机器了。</p>
 </li>
@@ -658,8 +815,8 @@ var _hmt = _hmt || [];
 <li>中间人攻击的前提是流量劫持，无论通过arp欺骗、伪装DHCP都可以达到目的，本文以arp欺骗来做演示。</li>
 <li><p>使用工具:</p>
 <ul>
-<li><a href="https://ettercap.github.io/ettercap/" target="_blank" rel="external">ettercap</a></li>
-<li><a href="http://www.thoughtcrime.org/software/sslstrip/" target="_blank" rel="external">sslstrip</a></li>
+<li><a href="https://ettercap.github.io/ettercap/" target="_blank" rel="noopener">ettercap</a></li>
+<li><a href="http://www.thoughtcrime.org/software/sslstrip/" target="_blank" rel="noopener">sslstrip</a></li>
 </ul>
 </li>
 <li><p>开启路由转发：echo “1”&gt;/proc/sys/net/ipv4/ip_forward</p>
@@ -673,18 +830,18 @@ var _hmt = _hmt || [];
 <ul>
 <li>sslstrip监听：</li>
 </ul>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sslstrip -l <span class="number">10000</span></div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sslstrip -l 10000</div></pre></td></tr></table></figure>
 <ul>
 <li>开始arp欺骗并嗅探密码：</li>
 </ul>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">这里如果真实的网关地址是：<span class="number">192.168</span>.<span class="number">1.1</span></div><div class="line">ettercap -Tq -M arp:remote <span class="regexp">//</span><span class="regexp">//</span></div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">这里如果真实的网关地址是：192.168.1.1</div><div class="line">ettercap -Tq -M arp:remote ////</div></pre></td></tr></table></figure>
 <ul>
 <li>结果就是各种密码就出现了,SNMP/HTTP/IAMP等等，还会有ssh、ftp等的密码。</li>
 </ul>
-<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">SNMP </span>: <span class="number">192.168</span>.<span class="number">1.42</span>:<span class="number">161</span> -&gt; <span class="attribute">COMMUNITY</span>: public  <span class="attribute">INFO</span>: SNMP v1</div><div class="line"><span class="attribute">IMAP </span>: <span class="number">103.231</span>.<span class="number">69.253</span>:<span class="number">143</span> -&gt; <span class="attribute">USER</span>: xxxx<span class="variable">@xxx</span>.com  <span class="attribute">PASS</span>: <span class="string">"*******"</span></div><div class="line"><span class="attribute">HTTP </span>: <span class="number">117.122</span>.<span class="number">217.6</span>:<span class="number">80</span> -&gt; <span class="attribute">USER</span>:xxxxx -  <span class="attribute">PASS</span>:xxxxx   <span class="attribute">INFO</span>: <span class="attribute">http</span>:<span class="comment">//xxxx/xxxx/article/details/31375935</span></div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">SNMP : 192.168.1.42:161 -&gt; COMMUNITY: public  INFO: SNMP v1</div><div class="line">IMAP : 103.231.69.253:143 -&gt; USER: xxxx@xxx.com  PASS: &quot;*******&quot;</div><div class="line">HTTP : 117.122.217.6:80 -&gt; USER:xxxxx -  PASS:xxxxx   INFO: http://xxxx/xxxx/article/details/31375935</div></pre></td></tr></table></figure>
 <h2 id="三、如何防范"><a href="#三、如何防范" class="headerlink" title="三、如何防范"></a>三、如何防范</h2><ul>
 <li>从源头：绑定网关，这样会使arp欺骗失去作用。</li>
-<li>从业务：启用HSTS，启用后只要和服务器建立过一次成功的链接，后续就会强制使用https，sslstrip就没用了。<a href="https://www.linpx.com/p/hsts-and-hsts-preload-list-enabled-applications.html" target="_blank" rel="external">详情点这里</a></li>
+<li>从业务：启用HSTS，启用后只要和服务器建立过一次成功的链接，后续就会强制使用https，sslstrip就没用了。<a href="https://www.linpx.com/p/hsts-and-hsts-preload-list-enabled-applications.html" target="_blank" rel="noopener">详情点这里</a></li>
 <li>从习惯：<ul>
 <li>不要蹭网，很多免费的wifi就是专门用来干这个的。。。</li>
 <li>防止被蹭，家庭wifi密码注意保密，被蹭网的危害不止损失一些带宽，被有心人利用会很危险。</li>
@@ -729,167 +886,6 @@ var _hmt = _hmt || [];
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2017/09/05/HTTPS剥离进行中间人攻击/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-组合使用VeryCloud-腾讯云加速github静态博客" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/">组合使用免费的VeryCloud&amp;腾讯云CDN加速github静态博客</a>
-    </h1>
-  
-
-        
-        <a href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/" class="archive-article-date">
-  	<time datetime="2017-08-29T11:58:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-29</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="国内主要的免费CDN"><a href="#国内主要的免费CDN" class="headerlink" title="国内主要的免费CDN"></a>国内主要的免费CDN</h3><table>
-<thead>
-<tr>
-<th>厂商</th>
-<th>免费额度</th>
-<th>免费HTTPS</th>
-<th>节点数量</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>VeryCloud</td>
-<td>50G/月</td>
-<td>是</td>
-<td>10+</td>
-</tr>
-<tr>
-<td>腾讯云</td>
-<td>10G/月</td>
-<td>是</td>
-<td>10+</td>
-</tr>
-<tr>
-<td>360网站卫士</td>
-<td>不限</td>
-<td>是</td>
-<td>1</td>
-</tr>
-<tr>
-<td>百度云加速</td>
-<td>不限</td>
-<td>否</td>
-<td>6+</td>
-</tr>
-<tr>
-<td>又拍云</td>
-<td>15G/月</td>
-<td>否</td>
-<td>10+</td>
-</tr>
-<tr>
-<td>七牛</td>
-<td>10G/月</td>
-<td>否</td>
-<td>10+</td>
-</tr>
-<tr>
-<td>加速乐</td>
-<td>3600GB/月</td>
-<td>否</td>
-<td>10+</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>支持免费https的只有VeryCloud、腾讯云、360网站卫士这三个，其中腾讯云支持直接在线申请免费的SSL证书。另一个支持免费证书的是又拍云，只是又拍云的https按照访问次数计费，每一万次访问0.05元RMB。流量免费15G。因为博主需求HTTPS，所以目前选择了VeryCloud和腾讯云。</li>
-</ul>
-<h3 id="上HTTPS的好处"><a href="#上HTTPS的好处" class="headerlink" title="上HTTPS的好处"></a>上HTTPS的好处</h3><ul>
-<li>google和百度都说了：优先收录https站点的页面，因此，利于SEO</li>
-<li>安全，这个对我这种纯静态的站点其实没什么卵用。</li>
-<li>逼格，，咳咳，拿来装B不错。</li>
-</ul>
-<h3 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h3><ul>
-<li>腾讯云的优点不用多说大厂风范，服务品质高。但是免费流量只有每月10G这点就不够大气了，目前我这个小博客足够用。但是随着流量增多就未必了。有必要未雨绸缪一下。</li>
-<li>选VeryCloud的原因主要是因为支持HTTPS同时又有50G的免费流量，但是实际测试发现到github.io的源站老不可用。动不动就闹情绪。开启永久在线才算是OK。</li>
-<li>坑爹的360，从全家桶开始坑人，一路坑。之前好好的多节点。现在搞成只有一个高防节点，这TM已经不能说是CDN了。唉，，其实功能后台都挺好的。</li>
-<li>其实不需要HTTPS的话直接上百度云加速挺好。但是一点HTTPS的免费额度都没有就比较恶心了。</li>
-<li>又拍云，，有15G流量，但是计费的时候HTTPS按访问次数计费是个什么鬼？</li>
-<li>七牛：七牛是我一直很欣赏也很喜欢的。功能做的很完美。很牛B，刚获得阿里10个亿的投资是有道理的。但是吐槽的原因一样也是因为没有免费的HTTPS</li>
-<li>加速乐，牛轰轰的安全公司知道创宇旗下，免费额度给力。但是跟其他选择着实没有什么亮点，3600G免费流量要是支持HTTPS就hi到翻了。然并卵。</li>
-</ul>
-<h3 id="实施"><a href="#实施" class="headerlink" title="实施"></a>实施</h3><ul>
-<li>其实没啥技术含量，本文主要是吐槽文。实在是国内的免费CDN要备案不说，资源也不够丰富。</li>
-<li>原理就是利用dnspod的cname负载均衡，目前的分配方案是：VeryCloud负责电信、联通这两个大户的流量，剩下的移动、以及一些小毛运营商的就由腾讯云负责，腾讯资源多，节点应该会比较丰富，小运营商也能兼顾的到。至于国外，github.io本身就是有国外CDN的，直接就回源（其实毛线的国外流量。。。）。来张图吧：</li>
-</ul>
-<p><img src="/assets/img/CDN.png" alt="img"></p>
-<ul>
-<li>最后晒下成果，还是蛮给力的，，国内最高的延迟也才93毫秒。秒开无压力。</li>
-</ul>
-<p><img src="/assets/img/CDN2.png" alt="img"></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">腾讯云CDN</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">VeryCloud</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">github静态博客</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/08/29/组合使用VeryCloud-腾讯云加速github静态博客/">展开全文 >></a>
         </p>
       
 
@@ -1016,6 +1012,38 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Zabbix</a>
               </li>
              
@@ -1036,19 +1064,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1061,46 +1081,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1117,6 +1097,42 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">forecast</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">dnsmasq</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">hostapd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">软AP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1137,10 +1153,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
