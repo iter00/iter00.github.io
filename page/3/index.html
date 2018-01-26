@@ -146,6 +146,80 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Golang-实现微信发信接口" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/02/25/Golang-实现微信发信接口/">Golang 实现微信发信接口</a>
+    </h1>
+  
+
+        
+        <a href="/2017/02/25/Golang-实现微信发信接口/" class="archive-article-date">
+  	<time datetime="2017-02-25T14:17:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-02-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div><div class="line">260</div><div class="line">261</div><div class="line">262</div><div class="line">263</div><div class="line">264</div><div class="line">265</div><div class="line">266</div><div class="line">267</div><div class="line">268</div><div class="line">269</div><div class="line">270</div><div class="line">271</div><div class="line">272</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> main</div><div class="line"></div><div class="line"><span class="keyword">import</span> (</div><div class="line">	<span class="string">"bytes"</span></div><div class="line">	<span class="string">"encoding/json"</span></div><div class="line">	<span class="string">"errors"</span></div><div class="line">	<span class="string">"fmt"</span></div><div class="line">	yaml <span class="string">"gopkg.in/yaml.v2"</span></div><div class="line">	<span class="string">"io/ioutil"</span></div><div class="line">	<span class="string">"log"</span></div><div class="line">	<span class="string">"net/http"</span></div><div class="line">	<span class="string">"os"</span></div><div class="line">	<span class="string">"strconv"</span></div><div class="line">	<span class="string">"time"</span></div><div class="line">	<span class="string">"strings"</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="keyword">type</span> Articles <span class="keyword">struct</span> &#123;</div><div class="line">	Title       <span class="keyword">string</span> <span class="string">`json:"title"`</span></div><div class="line">	Description <span class="keyword">string</span> <span class="string">`json:"description"`</span></div><div class="line">	Url         <span class="keyword">string</span> <span class="string">`json:"url"`</span></div><div class="line">	Picurl      <span class="keyword">string</span> <span class="string">`json:"picurl"`</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> SendData <span class="keyword">struct</span> &#123;</div><div class="line">	Touser  <span class="keyword">string</span>                <span class="string">`json:"touser"`</span></div><div class="line">	Toparty <span class="keyword">string</span>                <span class="string">`json:"toparty"`</span></div><div class="line">	Totag   <span class="keyword">string</span>                <span class="string">`json:"totag"`</span></div><div class="line">	Msgtype <span class="keyword">string</span>                <span class="string">`json:"msgtype"`</span></div><div class="line">	Agentid <span class="keyword">int</span>                   <span class="string">`json:"agentid"`</span></div><div class="line">	News    <span class="keyword">map</span>[<span class="keyword">string</span>][]Articles <span class="string">`json:"news,omitempty"`</span></div><div class="line">	Text    <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>     <span class="string">`json:"text,omitempty"`</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Alert <span class="keyword">struct</span> &#123;</div><div class="line">	Msgtype <span class="keyword">string</span></div><div class="line">	Touser  <span class="keyword">string</span></div><div class="line">	Togroup <span class="keyword">string</span></div><div class="line">	Title   <span class="keyword">string</span></div><div class="line">	Content <span class="keyword">string</span></div><div class="line">	Picurl  <span class="keyword">string</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Result <span class="keyword">struct</span> &#123;</div><div class="line">	Errorcode <span class="keyword">int</span></div><div class="line">	Errmsg    <span class="keyword">string</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> TOKEN <span class="keyword">struct</span> &#123;</div><div class="line">	Access_token <span class="keyword">string</span> <span class="string">`json:"access_token"`</span></div><div class="line">	Expires_in   <span class="keyword">int</span>    <span class="string">`json:"expires_in"`</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Dept_d <span class="keyword">struct</span> &#123;</div><div class="line">	Id       <span class="keyword">int</span>    <span class="string">`json:"id"`</span></div><div class="line">	Name     <span class="keyword">string</span> <span class="string">`json:"name"`</span></div><div class="line">	Parentid <span class="keyword">int</span>    <span class="string">`json:"parentid"`</span></div><div class="line">	Order    <span class="keyword">int</span>    <span class="string">`json:"order"`</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Dept <span class="keyword">struct</span> &#123;</div><div class="line">	Errcode    <span class="keyword">int</span>      <span class="string">`json:"errcode"`</span></div><div class="line">	Errmsg     <span class="keyword">string</span>   <span class="string">`json:"errmsg"`</span></div><div class="line">	Department []Dept_d <span class="string">`json:"department"`</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Conf <span class="keyword">struct</span> &#123;</div><div class="line">	Port   <span class="keyword">string</span> <span class="string">`yaml:"Port"`</span></div><div class="line">	Wechat <span class="keyword">struct</span> &#123;</div><div class="line">		CorpID  <span class="keyword">string</span> <span class="string">`yaml:"CorpID"`</span></div><div class="line">		Secret  <span class="keyword">string</span> <span class="string">`yaml:"Secret"`</span></div><div class="line">		Agentid <span class="keyword">int</span>    <span class="string">`yaml:"Agentid"`</span></div><div class="line">		Picurl  <span class="keyword">string</span> <span class="string">`yaml:"Picurl"`</span></div><div class="line">	&#125; <span class="string">`yaml:"Wechat"`</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> (</div><div class="line">	Token   <span class="keyword">string</span></div><div class="line">	Status  <span class="keyword">int</span></div><div class="line">	Depts   <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span></div><div class="line">	Agentid <span class="keyword">int</span></div><div class="line">	Picurl  <span class="keyword">string</span></div><div class="line">)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Gettoken</span><span class="params">(CorpID <span class="keyword">string</span>, Secret <span class="keyword">string</span>)</span></span> &#123; <span class="comment">//微信企业号token获取结果存入Token变量</span></div><div class="line">LOOP:</div><div class="line">	<span class="keyword">for</span> &#123;</div><div class="line">		url := fmt.Sprintf(<span class="string">"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&amp;corpsecret=%s"</span>, CorpID, Secret)</div><div class="line">		resp, err := http.Get(url)</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			fmt.Println(err)</div><div class="line">			Status++</div><div class="line">			<span class="keyword">if</span> Status &lt;= <span class="number">3</span> &#123;</div><div class="line">				<span class="keyword">goto</span> LOOP</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			result, _ := ioutil.ReadAll(resp.Body)</div><div class="line">			<span class="keyword">var</span> TOKEN_S TOKEN</div><div class="line">			<span class="keyword">if</span> err := json.Unmarshal(result, &amp;TOKEN_S); err == <span class="literal">nil</span> &#123;</div><div class="line">				Token = TOKEN_S.Access_token</div><div class="line">				Status = <span class="number">0</span></div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				fmt.Println(err)</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125;</div><div class="line">		Getorg()</div><div class="line">		time.Sleep(time.Second * <span class="number">7000</span>)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getorg</span><span class="params">()</span> <span class="params">(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>, error)</span></span> &#123; <span class="comment">//部门信息更新</span></div><div class="line">	<span class="keyword">var</span> DEPT Dept</div><div class="line">	<span class="keyword">var</span> Orgs = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</div><div class="line">	api := fmt.Sprintf(<span class="string">"https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=%s"</span>, Token)</div><div class="line">	resp, err := http.Get(api)</div><div class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">if</span> result, e := ioutil.ReadAll(resp.Body); e == <span class="literal">nil</span> &#123;</div><div class="line">			fmt.Println(<span class="keyword">string</span>(result))</div><div class="line">			<span class="keyword">if</span> loads := json.Unmarshal(result, &amp;DEPT); loads == <span class="literal">nil</span> &#123;</div><div class="line">				<span class="keyword">if</span> DEPT.Errcode == <span class="number">0</span> &#123;</div><div class="line">					Orgs[<span class="string">"errcode"</span>] = <span class="number">0</span></div><div class="line">					<span class="keyword">for</span> _, v := <span class="keyword">range</span> DEPT.Department &#123;</div><div class="line">						Orgs[v.Name] = v.Id</div><div class="line">					&#125;</div><div class="line">					Depts = Orgs</div><div class="line">					<span class="keyword">return</span> Orgs, <span class="literal">nil</span></div><div class="line"></div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	Orgs[<span class="string">"errcode"</span>] = <span class="number">1</span></div><div class="line">	<span class="keyword">return</span> Orgs, errors.New(<span class="string">"Request Error!"</span>)</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Gowechat</span><span class="params">(Data SendData)</span><span class="params">(<span class="keyword">bool</span>,error)</span></span>&#123;</div><div class="line">	<span class="keyword">var</span> ret = &amp;Dept&#123;&#125;</div><div class="line">	result, err := json.Marshal(Data)</div><div class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span>&#123;</div><div class="line">		log.Println(<span class="string">"[ERROR] "</span>,err)</div><div class="line">		<span class="keyword">return</span> <span class="literal">false</span>,err</div><div class="line">	&#125; <span class="keyword">else</span> &#123;</div><div class="line">		body := bytes.NewBuffer(result)</div><div class="line">		api := fmt.Sprintf(<span class="string">"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s"</span>, Token)</div><div class="line">		<span class="keyword">var</span> resp, requestErr = http.Post(api, <span class="string">"application/json;charset=utf-8"</span>, body)</div><div class="line">		<span class="keyword">if</span> requestErr != <span class="literal">nil</span> &#123;</div><div class="line">			log.Println(<span class="string">"[ERROR] "</span>,requestErr)</div><div class="line">			<span class="keyword">return</span> <span class="literal">false</span>,requestErr</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">var</span> result, e = ioutil.ReadAll(resp.Body)</div><div class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</div><div class="line">			log.Println(<span class="string">"[ERROR] "</span>,e)</div><div class="line">			<span class="keyword">return</span> <span class="literal">false</span>,e</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> loadsErr := json.Unmarshal(result, ret); loadsErr != <span class="literal">nil</span> &#123;</div><div class="line">			log.Println(<span class="string">"[ERROR] "</span>,loadsErr)</div><div class="line">			<span class="keyword">return</span> <span class="literal">false</span>,loadsErr</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span> <span class="literal">true</span>,<span class="literal">nil</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Send</span><span class="params">(w http.ResponseWriter, req *http.Request)</span></span> &#123; <span class="comment">//消息发送函数</span></div><div class="line">	<span class="keyword">var</span> Data SendData</div><div class="line">	<span class="keyword">var</span> articles Articles</div><div class="line">	<span class="keyword">var</span> GroupID = <span class="string">""</span></div><div class="line">	<span class="keyword">var</span> Msg = <span class="string">""</span></div><div class="line">	<span class="keyword">if</span> req.Method == http.MethodPost &#123;</div><div class="line">		<span class="keyword">var</span> j, err = ioutil.ReadAll(req.Body);</div><div class="line">		<span class="keyword">if</span>  err != <span class="literal">nil</span> &#123;</div><div class="line">			log.Println(err)</div><div class="line">			Msg = fmt.Sprintf(<span class="string">"&#123;\"Errorcode\":\"1\",\"msg\":\"%s\"&#125;"</span>,err)</div><div class="line">			fmt.Fprint(w,Msg)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line"></div><div class="line">		Alert_con := &amp;Alert&#123;&#125;</div><div class="line">		<span class="keyword">var</span> e = json.Unmarshal(j, Alert_con)</div><div class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</div><div class="line">			log.Println(e)</div><div class="line">			Msg = fmt.Sprintf(<span class="string">"&#123;\"Errorcode\":\"1\",\"msg\":\"%s\"&#125;"</span>,e)</div><div class="line">			fmt.Fprint(w,Msg)</div><div class="line">			<span class="keyword">return</span></div><div class="line">		&#125;</div><div class="line">		GroupList := []<span class="keyword">string</span>&#123;&#125;</div><div class="line">		<span class="keyword">for</span> _,SP:= <span class="keyword">range</span> strings.Split(Alert_con.Togroup,<span class="string">"|"</span>)&#123;</div><div class="line">			req,ok := Depts[SP]</div><div class="line">			<span class="keyword">if</span> ok&#123;</div><div class="line">				GroupList = <span class="built_in">append</span>(GroupList,strconv.Itoa(req))</div><div class="line">			&#125;</div><div class="line">			<span class="keyword">if</span> <span class="built_in">len</span>(GroupList) &gt; <span class="number">0</span>&#123;</div><div class="line">				GroupID = strings.Join(GroupList,<span class="string">"|"</span>)</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> Alert_con.Msgtype == <span class="string">"NEWS"</span> &#123;</div><div class="line">			<span class="keyword">if</span> Alert_con.Picurl != <span class="string">""</span> &#123;</div><div class="line">				Picurl = Alert_con.Picurl</div><div class="line">			&#125;</div><div class="line">			dict := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>][]Articles)</div><div class="line">			articles = Articles&#123;</div><div class="line">				Description: Alert_con.Content,</div><div class="line">				Title:       Alert_con.Title,</div><div class="line">				Picurl:      Picurl,</div><div class="line">				Url:         <span class="string">""</span>,</div><div class="line">			&#125;</div><div class="line">			dict[<span class="string">"articles"</span>] = <span class="built_in">append</span>([]Articles&#123;&#125;, articles)</div><div class="line">			Data = SendData&#123;</div><div class="line">				Agentid: Agentid,</div><div class="line">				Touser:  Alert_con.Touser,</div><div class="line">				Toparty: GroupID,</div><div class="line">				Totag:   <span class="string">""</span>,</div><div class="line">				Msgtype: <span class="string">"news"</span>,</div><div class="line">				News:    dict,</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			<span class="keyword">var</span> dict = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>)</div><div class="line">			dict[<span class="string">"content"</span>] = Alert_con.Content</div><div class="line">			Data = SendData&#123;</div><div class="line">				Agentid: Agentid,</div><div class="line">				Touser:  Alert_con.Touser,</div><div class="line">				Toparty: GroupID,</div><div class="line">				Totag:   <span class="string">""</span>,</div><div class="line">				Msgtype: <span class="string">"text"</span>,</div><div class="line">				Text:    dict,</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125;</div><div class="line">		result,err := Gowechat(Data)</div><div class="line">		<span class="keyword">if</span> result&#123;</div><div class="line">			Msg = fmt.Sprintf(<span class="string">"&#123;\"Errorcode\":\"0\",\"msg\":\"\"&#125;"</span>)</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			Msg = fmt.Sprintf(<span class="string">"&#123;\"Errorcode\":\"1\",\"msg\":\"%s\"&#125;"</span>,err)</div><div class="line"></div><div class="line">		&#125;</div><div class="line">		fmt.Fprint(w,Msg)</div><div class="line">	&#125;</div><div class="line"></div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">	conf := &amp;Conf&#123;&#125;</div><div class="line">	<span class="keyword">if</span> _, err := os.Stat(<span class="string">"config.yml"</span>); err == <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">if</span> fp, e := ioutil.ReadFile(<span class="string">"config.yml"</span>); e == <span class="literal">nil</span> &#123;</div><div class="line">			redyml := yaml.Unmarshal(fp, conf)</div><div class="line">			<span class="keyword">if</span> redyml != <span class="literal">nil</span> &#123;</div><div class="line">				log.Panic(<span class="string">"Read config fail!"</span>)</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125;</div><div class="line"></div><div class="line">	&#125; <span class="keyword">else</span> &#123;</div><div class="line">		log.Panic(<span class="string">"No such file config.yml"</span>)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> conf.Wechat.CorpID == <span class="string">""</span> || conf.Wechat.Secret == <span class="string">""</span> || conf.Port == <span class="string">""</span> &#123;</div><div class="line">		log.Panic(<span class="string">"Lack of necessary parameters！"</span>)</div><div class="line">	&#125;</div><div class="line">	Agentid = conf.Wechat.Agentid</div><div class="line">	Picurl = conf.Wechat.Picurl</div><div class="line">	<span class="keyword">go</span> Gettoken(conf.Wechat.CorpID, conf.Wechat.Secret)</div><div class="line">	http.HandleFunc(<span class="string">"/"</span>, Send)</div><div class="line">	http.ListenAndServe(<span class="string">":"</span>+conf.Port, <span class="literal">nil</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">golang,微信,企业号发信</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/02/25/Golang-实现微信发信接口/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-利用vagrant快速构建实验环境" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -541,7 +615,7 @@ docker service create命令创建一个 service.
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2017 wangxun
+    		&copy; 2018 wangxun
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -624,6 +698,10 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">docker</a>
               </li>
              
@@ -633,26 +711,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -676,14 +734,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">mesos</a>
               </li>
              
@@ -693,6 +743,58 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">N2N访问限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode防火墙限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -712,15 +814,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -733,18 +831,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">软AP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">

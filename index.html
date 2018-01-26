@@ -146,6 +146,125 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-N2N-Supernode的防火墙限制" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/26/N2N-Supernode的防火墙限制/">N2N Supernode的防火墙限制</a>
+    </h1>
+  
+
+        
+        <a href="/2018/01/26/N2N-Supernode的防火墙限制/" class="archive-article-date">
+  	<time datetime="2018-01-26T02:11:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>当使用N2N组网，实现多个设备&amp;网络互联的时候，难免遇到一个问题，edge的IP通常是不断变化的，这就意味着supernode通常要不做任何防火墙限制的放开，这导致supernode很容易被别人滥用，虽然不同community的网络是隔离的，但是也会造成流量成本居高不下。然而官方又并未提供Supernode的认证功能。对supernode的访问限制，是本文的需求背景。</p>
+</blockquote>
+<h3 id="1-对N2N流量进行抓包分析"><a href="#1-对N2N流量进行抓包分析" class="headerlink" title="1. 对N2N流量进行抓包分析"></a>1. 对N2N流量进行抓包分析</h3><ul>
+<li>开启supernode节点</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">supernode -l 11113</div></pre></td></tr></table></figure>
+<ul>
+<li>在另外一台机器上执行edge连接supernode,此处我们设置community为www.wangxun.me,key为123456</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -r -a 10.0.0.1 -l 10.110.2.57:11113 -d edge0 -c www.wangxun.me -k 123456</div></pre></td></tr></table></figure>
+<ul>
+<li>使用tcpdump抓取N2N数据包并输出到本地文件,可以多启edge。然后让edge之间产生网络交互，抓2分钟就差不多了。其实在实际分析的时候为了确认特征我是在多个edge间进行了各种操作，互相ping、传数据的。本文演示只启了一个edge。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">tcpdump -i eth0 udp port 11113 -n -vvv -w n2n.cap</div></pre></td></tr></table></figure>
+<ul>
+<li>将文件载入Wireshark进行分析很容易就发现edge跟supernode的数据包中community是明文的，且每个数据包中都包含有community。</li>
+</ul>
+<p><img src="http://image.wangxun.me/N2NTCPDump.png" alt=""></p>
+<ul>
+<li>用iptables 把所有不包含www.wangxun.me的包给DROP掉：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -I INPUT 1 -p udp --dport 11113 -m string ! --string &quot;www.wangxun.me&quot; --algo bm -j DROP</div></pre></td></tr></table></figure>
+<ul>
+<li>我们修改edge的启动参数，将community改成test</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">edge -r -a 10.0.0.1 -l 10.110.2.57:11113 -d edge0 -c test -k 123456</div></pre></td></tr></table></figure>
+<ul>
+<li>这个时候edge的日志：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">26/Jan/2018 10:44:40 [/data/n2n/n2n_v2/edge.c:1084] WARNING: Supernode not responding - moving to 0 of 1</div><div class="line">26/Jan/2018 10:45:01 [/data/n2n/n2n_v2/edge.c:1084] WARNING: Supernode not responding - moving to 0 of 1</div><div class="line">26/Jan/2018 10:45:23 [/data/n2n/n2n_v2/edge.c:1084] WARNING: Supernode not responding - moving to 0 of 1</div><div class="line">26/Jan/2018 10:45:43 [/data/n2n/n2n_v2/edge.c:1084] WARNING: Supernode not responding - moving to 0 of 1</div><div class="line">26/Jan/2018 10:46:03 [/data/n2n/n2n_v2/edge.c:1084] WARNING: Supernode not responding - moving to 0 of 1</div></pre></td></tr></table></figure>
+<ul>
+<li>总结：其实没有什么技术含量，抓包很容易就可以发现类似的特征。很多时候我们运维过程中遇到的需求和问题，通过一些简单的分析也许就能找得到方法和灵感。</li>
+</ul>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">N2N</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">supernode</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">N2N访问限制</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">supernode防火墙限制</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/01/26/N2N-Supernode的防火墙限制/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-利用树莓派DIY便携式多功能路由器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -243,15 +362,15 @@ var _hmt = _hmt || [];
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">树莓派</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
         			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">N2N</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
         			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">VPN</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">树莓派</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
@@ -782,139 +901,6 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-HTTPS剥离进行中间人攻击" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/09/05/HTTPS剥离进行中间人攻击/">HTTPS剥离进行中间人攻击</a>
-    </h1>
-  
-
-        
-        <a href="/2017/09/05/HTTPS剥离进行中间人攻击/" class="archive-article-date">
-  	<time datetime="2017-09-05T02:25:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-05</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="一、启用HTTPS就不怕被嗅探了吗？"><a href="#一、启用HTTPS就不怕被嗅探了吗？" class="headerlink" title="一、启用HTTPS就不怕被嗅探了吗？"></a>一、启用HTTPS就不怕被嗅探了吗？</h2><blockquote>
-<p>我们都知道HTTP是不安全的，因为很容易就可以被拦截到交互数据，例如提交的用户名密码、个人信息、银行卡等等。而HTTPS的安全在于用户提交的所有信息都是被强加密的。几乎不会被破译。但是这样就安全了吗？答案其实是否定的。</p>
-</blockquote>
-<ul>
-<li><p>通常我们在访问一个https的站点的时候不会直接输入全路径，例如：<a href="https://wangxun.me">https://wangxun.me</a> 多数只会输入：wangxun.me.这样其实首先是会去请求HTTP而不是请求HTTPS，只是HTTP通过跳转、连接、重定向的方法进行了页面跳转。试试访问：<a href="http://wangxun.me">http://wangxun.me</a></p>
-</li>
-<li><p>设想一下，如果我们可以强制到让客户端访问HTTP，那么用户交互是不是就可以被获取到了？没错。HTTPS很安全，但是如果把HTTPS强制性的剥离，让用户通过HTTP协议传输数据就可以直接劫持到用户的信息。</p>
-</li>
-</ul>
-<h2 id="二、中间人攻击、HTTPS剥离"><a href="#二、中间人攻击、HTTPS剥离" class="headerlink" title="二、中间人攻击、HTTPS剥离"></a>二、中间人攻击、HTTPS剥离</h2><ul>
-<li>中间人攻击的前提是流量劫持，无论通过arp欺骗、伪装DHCP都可以达到目的，本文以arp欺骗来做演示。</li>
-<li><p>使用工具:</p>
-<ul>
-<li><a href="https://ettercap.github.io/ettercap/" target="_blank" rel="noopener">ettercap</a></li>
-<li><a href="http://www.thoughtcrime.org/software/sslstrip/" target="_blank" rel="noopener">sslstrip</a></li>
-</ul>
-</li>
-<li><p>开启路由转发：echo “1”&gt;/proc/sys/net/ipv4/ip_forward</p>
-</li>
-<li><p>iptables：iptables -t nat -A PREROUTING -p tcp –dport 80 -j REDIRECT -to-port 10000</p>
-</li>
-</ul>
-<blockquote>
-<p>sslstrip的原理：通常访问网址的时候我们大多不会刻意的在前面写上https，也很少会关注我们是通过HTTP协议还是HTTPS协议在浏览。通常要求https访问的站点，在用户通过http访问的时候会以重定向的方式重定向到HTTPS地址，而sslstrip的原理解释拦截向https的重定向请求，担当一个代理的角色，如实转发客户端请求并返回，但是客户端跟中间人的交互采用的是HTTP协议，由于没有建立SSL连接，所以客户端提交的信息都会暴露。</p>
-</blockquote>
-<ul>
-<li>sslstrip监听：</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sslstrip -l 10000</div></pre></td></tr></table></figure>
-<ul>
-<li>开始arp欺骗并嗅探密码：</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">这里如果真实的网关地址是：192.168.1.1</div><div class="line">ettercap -Tq -M arp:remote ////</div></pre></td></tr></table></figure>
-<ul>
-<li>结果就是各种密码就出现了,SNMP/HTTP/IAMP等等，还会有ssh、ftp等的密码。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">SNMP : 192.168.1.42:161 -&gt; COMMUNITY: public  INFO: SNMP v1</div><div class="line">IMAP : 103.231.69.253:143 -&gt; USER: xxxx@xxx.com  PASS: &quot;*******&quot;</div><div class="line">HTTP : 117.122.217.6:80 -&gt; USER:xxxxx -  PASS:xxxxx   INFO: http://xxxx/xxxx/article/details/31375935</div></pre></td></tr></table></figure>
-<h2 id="三、如何防范"><a href="#三、如何防范" class="headerlink" title="三、如何防范"></a>三、如何防范</h2><ul>
-<li>从源头：绑定网关，这样会使arp欺骗失去作用。</li>
-<li>从业务：启用HSTS，启用后只要和服务器建立过一次成功的链接，后续就会强制使用https，sslstrip就没用了。<a href="https://www.linpx.com/p/hsts-and-hsts-preload-list-enabled-applications.html" target="_blank" rel="noopener">详情点这里</a></li>
-<li>从习惯：<ul>
-<li>不要蹭网，很多免费的wifi就是专门用来干这个的。。。</li>
-<li>防止被蹭，家庭wifi密码注意保密，被蹭网的危害不止损失一些带宽，被有心人利用会很危险。</li>
-<li>尽量避免用公共wifi。</li>
-<li>有安全意识，在使用共享网络时最好只浏览，不做登入操作。</li>
-</ul>
-</li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">ARP欺骗</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">中间人攻击</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">HTTPS</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">sslstrip</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/09/05/HTTPS剥离进行中间人攻击/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -929,7 +915,7 @@ var _hmt = _hmt || [];
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2017 wangxun
+    		&copy; 2018 wangxun
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -1012,6 +998,10 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">docker</a>
               </li>
              
@@ -1021,26 +1011,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1064,14 +1034,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">mesos</a>
               </li>
              
@@ -1081,6 +1043,58 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">N2N访问限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode防火墙限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1100,15 +1114,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">树莓派</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">VPN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1121,18 +1131,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">软AP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">redsocks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
               </li>
              
               <li class="article-tag-list-item">
