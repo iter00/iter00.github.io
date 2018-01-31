@@ -15,7 +15,7 @@
 <meta property="og:url" content="https://wangxun.me/2018/01/26/N2N-Supernode的防火墙限制/index.html">
 <meta property="og:site_name" content="踩坑记">
 <meta property="og:description" content="当使用N2N组网，实现多个设备&amp;amp;网络互联的时候，难免遇到一个问题，edge的IP通常是不断变化的，这就意味着supernode通常要不做任何防火墙限制的放开，这导致supernode很容易被别人滥用，虽然不同community的网络是隔离的，但是也会造成流量成本居高不下。然而官方又并未提供Supernode的认证功能。对supernode的访问限制，是本文的需求背景。  1. 对N2N流">
-<meta property="og:updated_time" content="2018-01-31T05:57:53.922Z">
+<meta property="og:updated_time" content="2018-01-31T06:16:24.421Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="N2N Supernode的防火墙限制">
 <meta name="twitter:description" content="当使用N2N组网，实现多个设备&amp;amp;网络互联的时候，难免遇到一个问题，edge的IP通常是不断变化的，这就意味着supernode通常要不做任何防火墙限制的放开，这导致supernode很容易被别人滥用，虽然不同community的网络是隔离的，但是也会造成流量成本居高不下。然而官方又并未提供Supernode的认证功能。对supernode的访问限制，是本文的需求背景。  1. 对N2N流">
@@ -181,6 +181,7 @@ var _hmt = _hmt || [];
 <li>使用tcpdump抓取N2N数据包并输出到本地文件,可以多启edge。然后让edge之间产生网络交互，抓2分钟就差不多了。其实在实际分析的时候为了确认特征我是在多个edge间进行了各种操作，互相ping、传数据的。本文演示只启了一个edge。</li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">tcpdump -i eth0 udp port 11113 -nn -XX</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">01:14:59.563261 IP x.x.x.x.xxxxx &gt; x.x.x.x.xxxxx: UDP, length 38</div><div class="line">	0x0000:  4502 0042 2266 0000 3111 26cd 3da4 2ce3  E..B&quot;f..1.&amp;.=.,.</div><div class="line">	0x0010:  1b7e ba71 091f 0400 002e f8ea 0202 0005  .~.q............</div><div class="line">	0x0020:  7777 772e 7761 6e67 7875 6e2e 6d65 0000  www.wangxun.me..</div><div class="line">	0x0030:  0000 0019 122f adc1 f2de f183 ea25 0000  ...../.......%..</div><div class="line">	0x0040:  0000                                     ..</div><div class="line">01:14:59.563265 IP x.x.x.x.xxxxx &gt; x.x.x.x.xxxxx: UDP, length 73</div><div class="line">	0x0000:  4502 0065 26f7 0000 3111 2219 3da4 2ce3  E..e&amp;...1.&quot;.=.,.</div><div class="line">	0x0010:  1b7e ba71 091f 0400 0051 e691 0202 0003  .~.q.....Q......</div><div class="line">	0x0020:  7777 772e 7761 6e67 7875 6e2e 6d65 0000  www.wangxun.me..</div><div class="line">	0x0030:  0002 ffff ffff ffff f2de f183 ea25 0806  .............%..</div><div class="line">	0x0040:  0100 0000 0078 9136 0a29 0496 36a0 b63c  .....x.6.)..6..&lt;</div><div class="line">	0x0050:  0b59 a2a9 1586 e962 374e 310b 210d a7b6  .Y.....b7N1.!...</div><div class="line">	0x0060:  9fbc 7f06 3f                             ....?</div><div class="line">01:14:59.563267 IP x.x.x.x.xxxxx &gt; x.x.x.x.xxxxx: UDP, length 73</div><div class="line">	0x0000:  4502 0065 0b87 0000 3111 3d89 3da4 2ce3  E..e....1.=.=.,.</div><div class="line">	0x0010:  1b7e ba71 091f 0400 0051 317c 0202 0003  .~.q.....Q1|....</div><div class="line">	0x0020:  7777 772e 7761 6e67 7875 6e2e 6d65 0000  www.wangxun.me..</div><div class="line">	0x0030:  0002 ffff ffff ffff f2de f183 ea25 0806  .............%..</div><div class="line">	0x0040:  0100 0000 000c 92cc ca50 bf5d 96b5 6130  .........P.]..a0</div><div class="line">	0x0050:  f161 dc02 f0f0 cbfd 5b04 0957 2b06 9137  .a......[..W+..7</div><div class="line">	0x0060:  893c 0c96 29                             .&lt;..)</div></pre></td></tr></table></figure>
 <ul>
 <li><p>仔细看，很容易就会发现规律，有木有发现每个数据包中有明文的community信息？那么，我们知道iptables是可以根据数据包中的字符串来匹配的，如果我们设定iptables规则只允许包含这个字符串的包访问supernode的端口是不是就达到目的了拿？let’s go</p>
 </li>
@@ -468,22 +469,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
               </li>
              
@@ -497,6 +482,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">中间人攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">HTTPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">sslstrip</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -532,23 +533,15 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">N2N</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">supernode</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">N2N访问限制</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">supernode防火墙限制</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">iptables限制supernode</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -572,14 +565,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
               </li>
              
@@ -589,6 +574,14 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">vagrant</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">python</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -608,14 +601,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">python</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
               </li>
              
@@ -625,6 +610,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">N2N访问限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode防火墙限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">iptables限制supernode</a>
               </li>
              
               <li class="article-tag-list-item">
