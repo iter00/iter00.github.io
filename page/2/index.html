@@ -146,6 +146,72 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-用Python简单封装zabbix的API" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/用Python简单封装zabbix的API/">用Python简单封装zabbix的API</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/16/用Python简单封装zabbix的API/" class="archive-article-date">
+  	<time datetime="2017-11-16T09:12:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>最近在搞zabbix监控，翻出忘记多久前写的zabbix API的简单封装。虽然现在网上有现成的zabbix的模块，但是还是打算把这段代码放在项目里面使用，一是因为足够简单干净，另外当然就是因为你懂得的心理作祟。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> json</div><div class="line">data = &#123;</div><div class="line">    <span class="string">"jsonrpc"</span>: <span class="string">"2.0"</span>,</div><div class="line">    <span class="string">"method"</span>: <span class="string">"user.login"</span>,</div><div class="line">    <span class="string">"params"</span>: &#123;</div><div class="line">        <span class="string">"user"</span>: <span class="string">"Admin"</span>,</div><div class="line">        <span class="string">"password"</span>: <span class="string">""</span>,</div><div class="line">    &#125;,</div><div class="line">    <span class="string">"id"</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">"auth"</span>: <span class="keyword">None</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Error</span><span class="params">(Exception)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,value)</span>:</span></div><div class="line">        self.value = value</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> repr(self.value)</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Zapi</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,auth)</span>:</span></div><div class="line">        self.auth = auth[<span class="number">0</span>]</div><div class="line">        self.zabbixurl = auth[<span class="number">1</span>]</div><div class="line"></div><div class="line"><span class="meta">    @staticmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gettoken</span><span class="params">(username,password,zabbixurl)</span>:</span></div><div class="line">        data.update(params=&#123;<span class="string">"user"</span>:username,<span class="string">"password"</span>:password&#125;)</div><div class="line">        s,r = Zapi.req(zabbixurl,data)</div><div class="line">        <span class="keyword">if</span> s:</div><div class="line">            auth = r[<span class="string">'result'</span>]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">print</span> r</div><div class="line">            <span class="keyword">raise</span> Error(r[<span class="string">'error'</span>])</div><div class="line">        <span class="keyword">return</span> (auth,zabbixurl)</div><div class="line"></div><div class="line"><span class="meta">    @staticmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">req</span><span class="params">(url,data=None,headers=&#123;<span class="string">'content-type'</span>: <span class="string">'application/json'</span>&#125;,method=<span class="string">'POST'</span>)</span>:</span></div><div class="line">        <span class="keyword">if</span> method == <span class="string">'POST'</span>:</div><div class="line">            r = requests.post(url, json.dumps(data),headers=headers)</div><div class="line">        <span class="keyword">elif</span> method == <span class="string">'GET'</span>:</div><div class="line">            r = requests.get(url, json.dumps(data), headers=headers)</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">raise</span> Error(<span class="string">"Unsupported method!"</span>)</div><div class="line">        <span class="keyword">if</span> r.status_code == <span class="number">200</span>:</div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                result = json.loads(r.text)</div><div class="line">            <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</div><div class="line">                <span class="keyword">return</span> <span class="keyword">False</span>, &#123;<span class="string">"error"</span>: e&#125;</div><div class="line">            <span class="keyword">else</span>:</div><div class="line">                <span class="keyword">if</span> <span class="string">"error"</span> <span class="keyword">in</span> result.keys():</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">False</span>,result</div><div class="line">                <span class="keyword">return</span> <span class="keyword">True</span>, result</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">False</span>, &#123;<span class="string">"error"</span>:<span class="string">"HTTP Code:%s"</span> % r.status_code&#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Task</span><span class="params">(self,Method=<span class="string">'host.get'</span>,Output=<span class="string">'extend'</span>,**kwargs)</span>:</span></div><div class="line">        <span class="keyword">if</span> Method.split(<span class="string">"."</span>)[<span class="number">1</span>] == <span class="string">"get"</span>:</div><div class="line">            params = &#123;</div><div class="line">                <span class="string">"output"</span>: Output,</div><div class="line">            &#125;</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            params = &#123;&#125;</div><div class="line">        params.update(kwargs)</div><div class="line">        data.update(auth=self.auth, method=Method, params=params)</div><div class="line">        <span class="keyword">print</span> data</div><div class="line">        status, result = Zapi.req(self.zabbixurl, data)</div><div class="line">        <span class="keyword">return</span> status, result</div></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/16/用Python简单封装zabbix的API/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-HTTPS剥离进行中间人攻击" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -743,158 +809,6 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-centos7-自动部署" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/03/06/centos7-自动部署/">centos7 自动部署</a>
-    </h1>
-  
-
-        
-        <a href="/2017/03/06/centos7-自动部署/" class="archive-article-date">
-  	<time datetime="2017-03-06T04:28:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-03-06</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>公司产品到了测试紧要关头，从Vagrant 虚拟环境转移到物理环境测试。5台物理机需要频繁的重装系统。而且系统要保证网络设定、团队成员账号公钥等内容。如果要是人工重装真要命了，太浪费时间了。因此采用镜像定制自动化部署的方式。Redhat&amp;Centos都使用anaconda作为部署程序。只需要定制ks文件，定义在部署后执行的脚本即可。我的做法是定义%post阶段的脚本，这个阶段是系统部署之后执行的。根据第一块硬盘的硬件ID识别主机。预先备份网卡配置文件根据hostname打包，然后将/etc/passwd、/etc/group、/etc/shadow、/etc/sudoers、/etc/resolv.conf再加上home目录下所有用户目录打包成global.tar.gz备用。</p>
-<h3 id="定制过程"><a href="#定制过程" class="headerlink" title="定制过程"></a>定制过程</h3><h5 id="1-挂载系统镜像"><a href="#1-挂载系统镜像" class="headerlink" title="1.挂载系统镜像"></a>1.挂载系统镜像</h5><pre><code>mount -o loop CentOS-7.0-1406-x86_64-DVD.iso /mnt/
-</code></pre><h5 id="2-创建定制目录"><a href="#2-创建定制目录" class="headerlink" title="2.创建定制目录"></a>2.创建定制目录</h5><pre><code>mkdir /root/mycentos
-</code></pre><h5 id="3-复制光盘文件"><a href="#3-复制光盘文件" class="headerlink" title="3.复制光盘文件"></a>3.复制光盘文件</h5><pre><code>cp -rf /mnt/* /root/mycentos
-</code></pre><h5 id="4-准备anaconda-ks-cfg文件"><a href="#4-准备anaconda-ks-cfg文件" class="headerlink" title="4.准备anaconda-ks.cfg文件"></a>4.准备anaconda-ks.cfg文件</h5><pre><code>auth --enableshadow --passalgo=sha512
-cdrom
-graphical
-firstboot --enable
-ignoredisk --only-use=sda
-keyboard --vckeymap=us --xlayouts=&apos;us&apos;
-lang en_US.UTF-8
-
-rootpw --iscrypted $6$JTQg2m20d/FfSPpW$dFYjFoGs2s8JC/93Rl3EMhipmsHc1KHAnmFQpM6hU8UcY69WldeZEtR75VueGL1bLInoKZ/TNh/N93Vxb0Vlc0
-firewall --disabled
-selinux --permissive
-timezone Asia/Shanghai --isUtc --nontp
-reboot
-bootloader --append=&quot; crashkernel=auto&quot; --location=mbr --boot-drive=sda
-autopart --type=lvm
-clearpart --all --initlabel --drives=sda
-
-%packages
-@core
-kexec-tools
-
-%end
-
-%addon com_redhat_kdump --enable --reserve-mb=&apos;auto&apos;
-
-%end
-
-%post --nochroot
-mkdir /mnt/centos
-mount /dev/cdrom /mnt/centos
-tar zxvf /mnt/centos/tools/global.tar.gz -C /mnt/sysimage/
-disksn=$(lsblk -o NAME,SERIAL|grep -w sda|awk &apos;{print $2}&apos;)
-host=&quot;&quot;
-case $disksn in
-600508e000000000fefbefdb6efe8f04)
-host=su4
-;;
-600508e0000000004b18b1e519dc5d0a)
-host=su1
-;;
-600508e000000000ff69a7de6d6a4701)
-host=su3
-;;
-600508e0000000005818a0f418dc4e0b)
-host=su2
-;;
-600508e000000000fc79b6c36a7a580c)
-host=su5
-;;
-esac
-
-[[ -f /mnt/centos/tools/$host.tar.gz ]] &amp;&amp; {
-tar zxvf /mnt/centos/tools/$host.tar.gz -C /mnt/sysimage/
-}
-%end
-</code></pre><h5 id="5-编辑isolinux-cfg"><a href="#5-编辑isolinux-cfg" class="headerlink" title="5.编辑isolinux.cfg"></a>5.编辑isolinux.cfg</h5><pre><code>label linux
-menu label ^Install CentOS 7
-menu default
-kernel vmlinuz
-# append initrd=initrd.img inst.stage2=hd:LABEL=CentOS7 quiet
-append initrd=initrd.img ks=cdrom:/isolinux/anaconda-ks.cfg
-label check
-menu label Test this ^media &amp; install CentOS 7
-kernel vmlinuz
-append initrd=initrd.img ks=cdrom:/isolinux/anaconda-ks.cfg rd.live.check
-#append initrd=initrd.img inst.stage2=hd:LABEL=CentOS7 rd.live.check quiet
-</code></pre><h5 id="5-生成最终iso镜像"><a href="#5-生成最终iso镜像" class="headerlink" title="5.生成最终iso镜像"></a>5.生成最终iso镜像</h5><pre><code>genisoimage -v -cache-inodes -joliet-long -R -J -T -V asika \
--o ./CentOS-x86_64-7-1511-my-ks.iso \
--c isolinux/boot.cat -b isolinux/isolinux.bin \
--no-emul-boot -boot-load-size 4 -boot-info-table \
--eltorito-alt-boot -b images/efiboot.img -no-emul-boot ./mycentos/
-</code></pre>
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">centos</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">anaconda-ks</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/03/06/centos7-自动部署/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
@@ -992,22 +906,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">docker</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">ARP欺骗</a>
               </li>
              
@@ -1044,6 +942,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">golang,微信,企业号发信</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">dockerfile</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">swarm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">mesos</a>
               </li>
              
@@ -1053,14 +967,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">mesos资源约束</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">centos</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1088,6 +994,22 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">N2N访问限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">supernode防火墙限制</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">iptables限制supernode</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">shadowsocks</a>
               </li>
              
@@ -1100,11 +1022,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
+                <a href="javascript:void(0)" class="js-tag color2">centos</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">python</a>
+                <a href="javascript:void(0)" class="js-tag color2">anaconda-ks</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1124,6 +1046,26 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ping路由追踪</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">mtr</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">tracert</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Cython</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">python</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">腾讯云CDN</a>
               </li>
              
@@ -1133,22 +1075,6 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">github静态博客</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">supernode</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">N2N访问限制</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">supernode防火墙限制</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">iptables限制supernode</a>
               </li>
              
               <li class="article-tag-list-item">

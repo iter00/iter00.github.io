@@ -6,17 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://wangxun.me">
-  <title>Tag: supernode防火墙限制 | 踩坑记</title>
+  <title>网络诊断之路由追踪的深度解析 | 踩坑记</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
-<meta property="og:type" content="website">
-<meta property="og:title" content="踩坑记">
-<meta property="og:url" content="https://wangxun.me/tags/supernode防火墙限制/index.html">
+  <meta name="description" content="有人问了我一个问题，说是面试的时候被问到的，用ping怎么实现路由追踪，他的回答是用trace工具或者mtr都可以，但是ping工具做不到，跟我吐槽，认为这是个很傻X的问题，但是事实真的是这样吗？针对运维工程师来说，网络异常是非常常见的问题。通常我们用ping来判断网络是否通畅，丢包情况，进而我们用trace工具来查看从源地址到目标地址经过的路由，更方便一点的我们用ping和trace合体的工具">
+<meta name="keywords" content="ping路由追踪,mtr,tracert">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络诊断之路由追踪的深度解析">
+<meta property="og:url" content="https://wangxun.me/2018/02/05/网络诊断之路由追踪的深度解析/index.html">
 <meta property="og:site_name" content="踩坑记">
-<meta property="og:description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
+<meta property="og:description" content="有人问了我一个问题，说是面试的时候被问到的，用ping怎么实现路由追踪，他的回答是用trace工具或者mtr都可以，但是ping工具做不到，跟我吐槽，认为这是个很傻X的问题，但是事实真的是这样吗？针对运维工程师来说，网络异常是非常常见的问题。通常我们用ping来判断网络是否通畅，丢包情况，进而我们用trace工具来查看从源地址到目标地址经过的路由，更方便一点的我们用ping和trace合体的工具">
+<meta property="og:updated_time" content="2018-02-05T08:08:03.865Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="踩坑记">
-<meta name="twitter:description" content="运维技术笔记，专注与Linux/Windows运维,Docker技术,Shell技巧,">
+<meta name="twitter:title" content="网络诊断之路由追踪的深度解析">
+<meta name="twitter:description" content="有人问了我一个问题，说是面试的时候被问到的，用ping怎么实现路由追踪，他的回答是用trace工具或者mtr都可以，但是ping工具做不到，跟我吐槽，认为这是个很傻X的问题，但是事实真的是这样吗？针对运维工程师来说，网络异常是非常常见的问题。通常我们用ping来判断网络是否通畅，丢包情况，进而我们用trace工具来查看从源地址到目标地址经过的路由，更方便一点的我们用ping和trace合体的工具">
   
     <link rel="alternative" href="/atom.xml" title="踩坑记" type="application/atom+xml">
   
@@ -144,76 +146,311 @@ var _hmt = _hmt || [];
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-网络诊断之路由追踪的深度解析" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2018/01/26/N2N-Supernode的防火墙限制/" class="archive-article-date">
-  	<time datetime="2018-01-26T02:11:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-26</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/01/26/N2N-Supernode的防火墙限制/">N2N Supernode的防火墙限制</a>
+    <h1 class="article-title" itemprop="name">
+      网络诊断之路由追踪的深度解析
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2018/02/05/网络诊断之路由追踪的深度解析/" class="archive-article-date">
+  	<time datetime="2018-02-05T03:04:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-02-05</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>有人问了我一个问题，说是面试的时候被问到的，用ping怎么实现路由追踪，他的回答是用trace工具或者mtr都可以，但是ping工具做不到，跟我吐槽，认为这是个很傻X的问题，但是事实真的是这样吗？针对运维工程师来说，网络异常是非常常见的问题。通常我们用ping来判断网络是否通畅，丢包情况，进而我们用trace工具来查看从源地址到目标地址经过的路由，更方便一点的我们用ping和trace合体的工具mtr来检测链路的质量，但是很多人只知道什么样的情况表示丢包，什么样的情况表示延迟，却很少有人会问这是什么样的原理，怎么实现的，诊断过程是怎样的。这道题在我看来，是一个很不错的问题，因为如果一个初入行的运维答得上来，说明你的功底很扎实（本人惭愧。。。初入行的时候估计和问我问题的老兄一个想法）绝对是加分项，如果一个很多年经验的运维还答不上来，就只能说明你缺乏技术思维和自我学习能力。技术人，很多时候都不应该人云亦云，多一点技术性思考，多一点追根究底才是王道，望共勉之！</p>
+</blockquote>
+<h3 id="一、路由跟踪的原理解析"><a href="#一、路由跟踪的原理解析" class="headerlink" title="一、路由跟踪的原理解析"></a>一、路由跟踪的原理解析</h3><ul>
+<li>我们不妨先老生常谈一番，思考一个问题：当你输入ping命令后发生的整个过程是什么样子的？假设你输入的是IP地址而不是域名（为了不跑题，我们抛开DNS解析的过程），首先第一步是根据子网掩码判断，目标IP是不是跟我在同一个网络中。如果是同一个网络中，那就用ARP协议获取目标物理地址，会先去看ARP缓存（IP和MAC的对应关系）中找目标IP的物理地址，如果缓存中没有，就给当前网络（子网掩码决定）所有主机发送广播：x.x.x.x的物理地址是什么？当目标主机收到请求，就会回复，我的物理地址是：XX:XX:XX:XX:XX，非目标主机收到广播后一看：关我毛事直接不理。源主机就这样知道了目标主机的物理地址，先放到缓存里，然后把目标的物理地址封装到ICMP协议的二层报文中。报文格式：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>目的地址</th>
+<th>源地址</th>
+<th></th>
+<th>源IP</th>
+<th>目的IP</th>
+<th></th>
+<th>ICMP报文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AA:AA:AA:AA:AA</td>
+<td>BB:BB:BB:BB:BB</td>
+<td></td>
+<td>192.168.1.1</td>
+<td>192.168.1.2</td>
+<td></td>
+<td>亲，约吗？(echo request)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>目标主机收到了报文，打开一看，哦，AA:AA:AA:AA:AA问我约不约，于是回复：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>目的地址</th>
+<th>源地址</th>
+<th></th>
+<th>源IP</th>
+<th>目的IP</th>
+<th></th>
+<th>ICMP报文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BB:BB:BB:BB:BB</td>
+<td>AA:AA:AA:AA:AA</td>
+<td></td>
+<td>192.168.1.2</td>
+<td>192.168.1.1</td>
+<td></td>
+<td>果断约(echo answer)</td>
+</tr>
+</tbody>
+</table>
+<p>于是就这样完成了一次内网的ping过程。</p>
+<ul>
+<li>那如果目标地址跟我们不在一个网络里面那？也简单:<ol>
+<li>根据子网掩码知道约的对象跟我不在一个网络里，没关系，咱有红娘（网关路由）,于是先查ARP缓存，看有没有红娘的地址。如果没有就扯着嗓子叫（ARP广播）,谁是红娘？红娘收到广播就回复自己的地址。然后源主机就跟红娘搭上线了，把自己的VCR（报文）交给红娘。</li>
+<li>红娘会先判断妹子是不是跟自己在一个网络里，如果不是就查自己的笔记（路由表）找下一个红娘的地址，然后去掉原来的地址信息（红娘比较邪恶，想要联系必须先经过我才行）加上红娘自己的地址,发给妹子。</li>
+<li>妹子收到后一看VCR，嗯，这帅哥不错，约了，于是告诉红娘，红娘再把这个好消息通知帅哥（源主机）。嗯，一次皮条。。。额不，一次ping就完成了。</li>
+<li>只是很多时候帅哥和妹子相距千山万水，所以中间需要有很多红娘做信息中转才行（单身的数据包太多，一个红娘撑不住啊）。。于是往往一个VCR要经过多个红娘传递，每个红娘都会先判断妹子是不是跟自己在一个网络里，如果不在一个网络里就把数据给下一个红娘，直到找到妹子为止。 只是这样就会存在一个问题，如果目标的妹子已经不存在了（甭管是嫁人了还是怎么的了。。。）那数据包要是一直这样下去永远在网络上传递，帅哥等白了头发也没能得到回复。。。为了避免这种悲剧发生，其实每个报文在送出的时候就定义好了一个叫TTL（最大生存时间）的值，这个值windows下默认是128，Linux下默认是64，可以自定义，但是最大不能超过255，报文每经过一个红娘，这个值就减1，红娘会把这个值为0的包丢弃，并回复：死心吧。你没戏了！还有一种情况是中间某个红娘要是不小心生病了，传递慢下来了（网络延迟），或者直接弄丢了（丢包）就引发了网络问题。为了保证安全，聪明的人类发明了TCP协议，收到的每一个包都会回复确认收到，如果对方没有回复确认的话就触发重传。所以TCP协议是很安全的，但是因为需要来回确认，导致了开销，所以传输效率不如直来直去的UDP协议。</li>
+</ol>
+</li>
+</ul>
+<h3 id="二、trace和MTR原理"><a href="#二、trace和MTR原理" class="headerlink" title="二、trace和MTR原理"></a>二、trace和MTR原理</h3><ul>
+<li><p>上面我们知道了ping的过程，那么路由追踪跟这个有什么关系那？其实重点在于TTL这个东东。上文有提到，TTL有三个特点：1.在传输的时候定义 2.每经过一个路由减1 3.当为0的时候会被丢弃。而tracert的原理就是基于此。我们想象一下：发出一个包，定义TTL=1 让这个包到达第一条路由的时候TTL被减1变成0，于是这个包被丢弃，并返回：Time to live exceeded，以此类推，当TTL等于2的时候第二跳路由会回复给你……直到达到目标地址。这样我们就取到了到目标地址之间经过的所有路由。是不是很简单？没错，就是这么简单。linux下的traceroute工具就是基于此原理。而MTR也只是把ICMP请求用的时间一起计算展示而已。</p>
+</li>
+<li><p>先来看一个MTR的数据(为避免暴露，前面几跳IP做打码处理)：</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">HOST: wangxun.local               Loss%   Snt   Last   Avg  Best  Wrst StDev</div><div class="line">  1.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0</div><div class="line">  2.|-- XX.XX.XX.XX.X              0.0%    10    6.5  15.5   2.9  35.5  11.8</div><div class="line">  3.|-- XX.XX.XXX.XXX              0.0%    10    3.6   6.7   2.3  21.5   6.7</div><div class="line">  4.|-- XX.XXX.XX.XXX              0.0%    10   47.3  17.5   2.5  47.3  16.5</div><div class="line">  5.|-- XX.XXX.XX.XXX              0.0%    10    6.2   9.9   2.6  24.2   9.0</div><div class="line">  6.|-- 202.97.68.121              0.0%    10   37.9  43.2  34.6  69.1  13.2</div><div class="line">  7.|-- 180.149.128.26            90.0%    10   30.8  30.8  30.8  30.8   0.0</div><div class="line">  8.|-- 218.30.112.129            80.0%    10   31.1  30.7  30.2  31.1   0.6</div><div class="line">  9.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 10.|-- 220.181.17.90              0.0%    10   35.1  39.8  35.1  61.5   9.0</div><div class="line"> 11.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 12.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 13.|-- 220.181.57.216             0.0%    10   35.7  40.1  35.3  54.5   6.8</div></pre></td></tr></table></figure>
+<ul>
+<li><p>出现问号，表示探测包被丢弃了，这一般是网络设备的安全限制，可以无视。LOSS非0说明不了问题，是因为一些路由为了减少负载会针对ICMP包进行丢弃处理。很多人错误的以为LOSS信息表示的是数据包的串行流向，所以出现一个LOSS不为0的就以为找到问题了，其实是对左边的数字的错误理解，，左边第一列的数字只表示路由走向，先经过那个再经过那个。而后面的LOSS其实是并行的，先追踪出来每一跳的路由，再计算从本机到路由的ping时间。比如说第八跳到第十跳，后面的延迟丢包数据并不是从第8条路由到第10跳路由的数据，而是从发起MTR的主机上到每一跳路由的数据。接下来介绍一些方法：</p>
+</li>
+<li><p>只要出现0.0%那之前所有的路由数据都无视，最后一跳如果是0%那就说明网络没问题，例如上面MTR结果中，最后一跳是0.0%  所以表示网络状况良好，没有丢包。</p>
+</li>
+<li><p>如果从一跳开始丢包一直到最后一跳丢包率一致，那应该就是开始丢包那一跳出了问题,例如下面的结果中，就可以判断是第10跳路由出了问题。</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">HOST: wangxun.local               Loss%   Snt   Last   Avg  Best  Wrst StDev</div><div class="line">  1.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0</div><div class="line">  2.|-- XX.XX.XX.XX.X              0.0%    10    6.5  15.5   2.9  35.5  11.8</div><div class="line">  3.|-- XX.XX.XXX.XXX              0.0%    10    3.6   6.7   2.3  21.5   6.7</div><div class="line">  4.|-- XX.XXX.XX.XXX              0.0%    10   47.3  17.5   2.5  47.3  16.5</div><div class="line">  5.|-- XX.XXX.XX.XXX              0.0%    10    6.2   9.9   2.6  24.2   9.0</div><div class="line">  6.|-- 202.97.68.121              0.0%    10   37.9  43.2  34.6  69.1  13.2</div><div class="line">  7.|-- 180.149.128.26            90.0%    10   30.8  30.8  30.8  30.8   0.0</div><div class="line">  8.|-- 218.30.112.129            80.0%    10   31.1  30.7  30.2  31.1   0.6</div><div class="line">  9.|-- ???                        0.0%    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 10.|-- 220.181.17.90             10.0%    10   35.1  39.8  35.1  61.5   9.0</div><div class="line"> 11.|-- ???                       10.0%    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 12.|-- ???                       10.0%    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 13.|-- 220.181.57.216            10.0%    10   35.7  40.1  35.3  54.5   6.8</div></pre></td></tr></table></figure>
+<ul>
+<li><p>如果是下面的这个结果，排除0.0%以上之后，只有最后一条丢包，就说明是目标主机自身的网络出现了问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">HOST: wangxun.local               Loss%   Snt   Last   Avg  Best  Wrst StDev</div><div class="line">  1.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0</div><div class="line">  2.|-- XX.XX.XX.XX.X              0.0%    10    6.5  15.5   2.9  35.5  11.8</div><div class="line">  3.|-- XX.XX.XXX.XXX              0.0%    10    3.6   6.7   2.3  21.5   6.7</div><div class="line">  4.|-- XX.XXX.XX.XXX              0.0%    10   47.3  17.5   2.5  47.3  16.5</div><div class="line">  5.|-- XX.XXX.XX.XXX              0.0%    10    6.2   9.9   2.6  24.2   9.0</div><div class="line">  6.|-- 202.97.68.121              0.0%    10   37.9  43.2  34.6  69.1  13.2</div><div class="line">  7.|-- 180.149.128.26            90.0%    10   30.8  30.8  30.8  30.8   0.0</div><div class="line">  8.|-- 218.30.112.129            80.0%    10   31.1  30.7  30.2  31.1   0.6</div><div class="line">  9.|-- ???                        0.0%    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 10.|-- 220.181.17.90             10.0%    10   35.1  39.8  35.1  61.5   9.0</div><div class="line"> 11.|-- ???                        9.0%    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 12.|-- ???                        0.0%    10    0.0   0.0   0.0   0.0   0.0</div><div class="line"> 13.|-- 220.181.57.216             3.0%    10   35.7  40.1  35.3  54.5   6.8</div></pre></td></tr></table></figure>
+</li>
+<li><p>最好是结合双向的MTR结果来分析。还有防火墙禁止ICMP的时候LOSS的数据会是100%。</p>
+</li>
+</ul>
+<h3 id="三、用ping工具进行路由追踪"><a href="#三、用ping工具进行路由追踪" class="headerlink" title="三、用ping工具进行路由追踪"></a>三、用ping工具进行路由追踪</h3><ul>
+<li><p>用ping是可以做路由追踪的，只是麻烦了很多。实用性很低，但是了解追踪的整个过程和原理，对我们实际场景中遇到的问题诊断会很有帮助。</p>
+</li>
+<li><p>ping命令目前几乎是几乎所有操作系统的default配置。也是最常用的命令之一，但是虽然很通用，但是仅仅是对常规用法而言，对于我们今天的演示来说，mac、windows、linux是都存在差异的。只是指令上的差异，原理和结果比较一致，所以这里只演示MAC环境下的结果，其他环境也只需要换下参数而已。</p>
+</li>
+</ul>
+<h4 id="MAC-下："><a href="#MAC-下：" class="headerlink" title="MAC 下："></a>MAC 下：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-m 指定TTL</div><div class="line">-t 指定timeout</div><div class="line">-c 指定发送次数</div></pre></td></tr></table></figure>
+<ul>
+<li>先指定TTL为1,因为我的防火墙屏蔽了ICMP包，所以结果为空：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">wangxun:~ wangxun$ ping -m 1 -t 1 -c 1 www.baidu.com</div><div class="line">PING www.a.shifen.com (220.181.112.244): 56 data bytes</div><div class="line"></div><div class="line">--- www.a.shifen.com ping statistics ---</div><div class="line">1 packets transmitted, 0 packets received, 100.0% packet loss</div></pre></td></tr></table></figure>
+<ul>
+<li>指定TTL为2,第2跳追踪出来了（已打码）：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">wangxun:~ wangxun$ ping -m 2 -t 1 -c 1 www.baidu.com</div><div class="line">PING www.a.shifen.com (220.181.112.244): 56 data bytes</div><div class="line">36 bytes from XX.XXX.XX.XX: Time to live exceeded</div><div class="line">Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst</div><div class="line"> 4  5  00 5400 d052   0 0000  01  01 906a 10.100.0.223  220.181.112.244</div><div class="line"></div><div class="line"></div><div class="line">--- www.a.shifen.com ping statistics ---</div><div class="line">1 packets transmitted, 0 packets received, 100.0% packet loss</div></pre></td></tr></table></figure>
+<ul>
+<li>依次类推，即可取得所有的路由。</li>
+</ul>
+<h4 id="Linux-下："><a href="#Linux-下：" class="headerlink" title="Linux 下："></a>Linux 下：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-t 指定TTL</div><div class="line">-W 指定timeout</div><div class="line">-c 指定发送次数</div></pre></td></tr></table></figure>
+<ul>
+<li>演示：同上</li>
+</ul>
+<h4 id="Windows-下："><a href="#Windows-下：" class="headerlink" title="Windows 下："></a>Windows 下：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-i 指定TTL</div><div class="line">-w 指定timeout</div><div class="line">-n 指定发送次数</div></pre></td></tr></table></figure>
+<ul>
+<li>演示： 同上</li>
+</ul>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我喝咖啡！<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/img/zhifubao.png">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/img/weixin.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">N2N</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ping路由追踪</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">supernode</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">mtr</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">N2N访问限制</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">supernode防火墙限制</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">iptables限制supernode</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">tracert</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=https://wangxun.me/2018/02/05/网络诊断之路由追踪的深度解析/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2018/01/26/N2N-Supernode的防火墙限制/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">N2N Supernode的防火墙限制</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+  <div id="SOHUCS" sid="网络诊断之路由追踪的深度解析" ></div> 
+<script type="text/javascript"> 
+window.YiliaChangyanWrap = function() {
+    var appid = "cyrPrHatm"; 
+    var conf = "1c08167df28cbb3eea7ffca06fd08bbb"; 
+    var width = window.innerWidth || document.documentElement.clientWidth; 
+    if (width < 960) { 
+    window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="//changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("//changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+}
+</script>
+  
+
+  
+
+  
 
 
           </div>
@@ -236,9 +473,9 @@ var _hmt = _hmt || [];
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
